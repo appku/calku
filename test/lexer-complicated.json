@@ -1,0 +1,272 @@
+[
+    {
+        "type": "group-start",
+        "startIndex": 0,
+        "endIndex": 1
+    },
+    {
+        "type": "literal",
+        "startIndex": 1,
+        "value": 10,
+        "style": "naked",
+        "endIndex": 3
+    },
+    {
+        "type": "op",
+        "startIndex": 4,
+        "endIndex": 5,
+        "op": "ADDITION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "+"
+            ]
+        }
+    },
+    {
+        "type": "literal",
+        "startIndex": 6,
+        "value": 2,
+        "style": "naked",
+        "endIndex": 7
+    },
+    {
+        "type": "op",
+        "startIndex": 8,
+        "endIndex": 9,
+        "op": "DIVISION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "/"
+            ]
+        }
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 10,
+        "endIndex": 15,
+        "value": "{age}",
+        "prop": "age"
+    },
+    {
+        "type": "op",
+        "startIndex": 16,
+        "endIndex": 17,
+        "op": "ADDITION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "+"
+            ]
+        }
+    },
+    {
+        "type": "group-start",
+        "startIndex": 18,
+        "endIndex": 19
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 19,
+        "endIndex": 24,
+        "value": "{qty}",
+        "prop": "qty"
+    },
+    {
+        "type": "op",
+        "startIndex": 25,
+        "endIndex": 26,
+        "op": "MULTIPLICATION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "*"
+            ]
+        }
+    },
+    {
+        "type": "group-start",
+        "startIndex": 27,
+        "endIndex": 28
+    },
+    {
+        "type": "group-start",
+        "startIndex": 28,
+        "endIndex": 29
+    },
+    {
+        "type": "literal",
+        "startIndex": 29,
+        "value": 8,
+        "style": "naked",
+        "endIndex": 30
+    },
+    {
+        "type": "op",
+        "startIndex": 31,
+        "endIndex": 32,
+        "op": "ADDITION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "+"
+            ]
+        }
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 33,
+        "endIndex": 40,
+        "value": "{sales}",
+        "prop": "sales"
+    },
+    {
+        "type": "group-end",
+        "startIndex": 40,
+        "endIndex": 41
+    },
+    {
+        "type": "op",
+        "startIndex": 42,
+        "endIndex": 43,
+        "op": "DIVISION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "/"
+            ]
+        }
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 44,
+        "endIndex": 52,
+        "value": "{profit}",
+        "prop": "profit"
+    },
+    {
+        "type": "group-end",
+        "startIndex": 52,
+        "endIndex": 53
+    },
+    {
+        "type": "op",
+        "startIndex": 54,
+        "endIndex": 55,
+        "op": "SUBTRACTION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "-"
+            ]
+        }
+    },
+    {
+        "type": "func",
+        "startIndex": 56,
+        "value": "COUNT",
+        "endIndex": 61
+    },
+    {
+        "type": "func-arg-start",
+        "startIndex": 61,
+        "endIndex": 62
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 62,
+        "endIndex": 70,
+        "value": "{gnomes}",
+        "prop": "gnomes"
+    },
+    {
+        "type": "func-arg-sep",
+        "startIndex": 70,
+        "endIndex": 71
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 72,
+        "endIndex": 80,
+        "value": "{horses}",
+        "prop": "horses"
+    },
+    {
+        "type": "func-arg-sep",
+        "startIndex": 80,
+        "endIndex": 81
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 82,
+        "endIndex": 90,
+        "value": "{apples}",
+        "prop": "apples"
+    },
+    {
+        "type": "op",
+        "startIndex": 91,
+        "endIndex": 92,
+        "op": "ADDITION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "+"
+            ]
+        }
+    },
+    {
+        "type": "literal",
+        "startIndex": 93,
+        "value": 6,
+        "style": "naked",
+        "endIndex": 94
+    },
+    {
+        "type": "func-arg-sep",
+        "startIndex": 94,
+        "endIndex": 95
+    },
+    {
+        "type": "group-start",
+        "startIndex": 96,
+        "endIndex": 97
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 97,
+        "endIndex": 103,
+        "value": "{apes}",
+        "prop": "apes"
+    },
+    {
+        "type": "op",
+        "startIndex": 104,
+        "endIndex": 105,
+        "op": "ADDITION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "+"
+            ]
+        }
+    },
+    {
+        "type": "literal",
+        "startIndex": 106,
+        "value": 1,
+        "style": "naked",
+        "endIndex": 107
+    },
+    {
+        "type": "group-end",
+        "startIndex": 107,
+        "endIndex": 108
+    },
+    {
+        "type": "func-arg-end",
+        "startIndex": 108,
+        "endIndex": 109
+    }
+]
