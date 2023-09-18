@@ -1,5 +1,6 @@
 import jest from 'jest-mock';
 import CalcKu, { TokenType } from './calku.js';
+import fs from 'fs/promises';
 
 const sample = {
     alpha: "abc",
@@ -75,12 +76,10 @@ describe('#lexer', () => {
             'literal', 'op', 'literal', 'comment', 'op', 'literal'
         ]);
     });
-    it.only('extracts tokens for a complicated, nested expression.', () => {
-        let test = '(10 + 2 / {age} + ({qty} * ((8 + {sales}) / {profit}) - COUNT({gnomes}, {horses}, {apples} + 6, ({apes} + 1))'
-        console.log(JSON.stringify(new CalcKu(test).lexer()));
-        expect(new CalcKu(test).lexer()).toEqual([
-            'literal', 'op', 'literal', 'comment', 'op', 'literal'
-        ]);
+    it('extracts tokens for a complicated, nested expression.', async () => {
+        let test = '(10 + 2 / {person.age:4} + ({qty} * ((8 + {sales}) / {profit}) - COUNT({gnomes}, {horses}, {apples} + 6, ({apes} + 1))'
+        let content = await fs.readFile('./test/lexer-complicated.json', 'utf-8');
+        expect(new CalcKu(test).lexer()).toEqual(JSON.parse(content));
     });
 });
 
@@ -276,6 +275,78 @@ describe('#properties', () => {
         for (let t of tests) {
             expect(Array.isArray(new CalcKu(t[0]).properties())).toBe(true);
             expect(new CalcKu(t[0]).properties()).toEqual(t[1]);
+        }
+    });
+});
+
+describe('.valueAt', () => {
+    it('throws on an invalid path type.', () => {
+        let tests = [undefined, null, true, false, new Date(), 1234];
+        for (let t of tests) {
+            expect(() => CalcKu.valueAt(t, {})).toThrowError(/A text string path is required./i);
+        }
+    });
+    it('throws on an empty path segment.', () => {
+        expect(() => CalcKu.valueAt('abc..test', { abc: { test: [1, 2, 3] } })).toThrowError(/The path contains an empty segment at position/i);
+        expect(() => CalcKu.valueAt('abc.test:', { abc: { test: [1, 2, 3] } })).toThrowError(/The path contains an empty segment at position/i);
+    });
+    it('throws on illegal segment.', () => {
+        expect(() => CalcKu.valueAt('prototype', {})).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('constructor', {})).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('__proto__', {})).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('x.prototype', { x: {} })).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('x.constructor', { x: {} })).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('x.__proto__', { x: {} })).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('x:0.prototype', { x: [{}] })).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('x:0.constructor', { x: [{}] })).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt('x:0.__proto__', { x: [{}] })).toThrowError(/invalid segment/i);
+    });
+    it('returns undefined if any part of the path results in a undefined property.', () => {
+        expect(CalcKu.valueAt('abc', null)).toBeUndefined();
+        expect(CalcKu.valueAt('abc', undefined)).toBeUndefined();
+        expect(CalcKu.valueAt('abc', {})).toBeUndefined();
+        expect(CalcKu.valueAt('hello.toast', { hello: { mars: 123 } })).toBeUndefined();
+        expect(CalcKu.valueAt('hello.toast:2', { hello: { mars: 123 } })).toBeUndefined();
+    });
+    it('returns undefined if a mid-segment results in a null property value.', () => {
+        expect(CalcKu.valueAt('hello.mars.land', { hello: { mars: null } })).toBeUndefined();
+        expect(CalcKu.valueAt('hello.mars:3', { hello: { mars: null } })).toBeUndefined();
+        expect(CalcKu.valueAt('hello.mars', { hello: { mars: null } })).toBeNull();
+    });
+    it('returns undefined if any part of the path results in a value that is a function.', () => {
+        expect(CalcKu.valueAt('abc', { abc: () => 1 + 1 })).toBeUndefined();
+        expect(CalcKu.valueAt('abc:1', { abc: ['hi', () => 1 + 1] })).toBeUndefined();
+        expect(CalcKu.valueAt('abc.test', { abc: { test: () => 1 + 1 } })).toBeUndefined();
+        expect(CalcKu.valueAt('abc.test:1', { abc: { test: () => 1 + 1 } })).toBeUndefined();
+        expect(CalcKu.valueAt('abc.test.name', { abc: { test: () => 1 + 1 } })).toBeUndefined();
+    });
+    it('finds a value by dot path and index.', () => {
+        let tests = [
+            ['abc', 123],
+            ['test.cool', true],
+            ['test.moose:0.hello', 'mars'],
+            ['test.moose:1.moons:1', 'europa'],
+            ['test.moose:2.meta', { a: 1, b: 2 }],
+            ['test.moose:1.moons:1:2', 'r'], //substring
+            ['test.arrPirates:0', null],
+            ['test.arrPirates:1', undefined],
+            ['test.arrPirates:2', false],
+            ['test.arrPirates:3', 0]
+        ];
+        let sample = {
+            abc: 123,
+            test: {
+                moose: [
+                    { hello: 'mars' },
+                    { hello: 'jupiter', moons: ['io', 'europa'] },
+                    { hello: 'neptune', meta: { a: 1, b: 2 } }
+                ],
+                arrPirates: [null, undefined, false, 0],
+                cool: true
+            }
+        }
+        for (let t of tests) {
+            expect(CalcKu.valueAt(t[0], sample)).toEqual(t[1]);
         }
     });
 });

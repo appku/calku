@@ -45,14 +45,14 @@
     {
         "type": "prop-ref",
         "startIndex": 10,
-        "endIndex": 15,
-        "value": "{age}",
-        "prop": "age"
+        "endIndex": 24,
+        "value": "{person.age:4}",
+        "prop": "person.age:4"
     },
     {
         "type": "op",
-        "startIndex": 16,
-        "endIndex": 17,
+        "startIndex": 25,
+        "endIndex": 26,
         "op": "ADDITION",
         "value": {
             "type": "math",
@@ -63,20 +63,20 @@
     },
     {
         "type": "group-start",
-        "startIndex": 18,
-        "endIndex": 19
+        "startIndex": 27,
+        "endIndex": 28
     },
     {
         "type": "prop-ref",
-        "startIndex": 19,
-        "endIndex": 24,
+        "startIndex": 28,
+        "endIndex": 33,
         "value": "{qty}",
         "prop": "qty"
     },
     {
         "type": "op",
-        "startIndex": 25,
-        "endIndex": 26,
+        "startIndex": 34,
+        "endIndex": 35,
         "op": "MULTIPLICATION",
         "value": {
             "type": "math",
@@ -87,25 +87,25 @@
     },
     {
         "type": "group-start",
-        "startIndex": 27,
-        "endIndex": 28
+        "startIndex": 36,
+        "endIndex": 37
     },
     {
         "type": "group-start",
-        "startIndex": 28,
-        "endIndex": 29
+        "startIndex": 37,
+        "endIndex": 38
     },
     {
         "type": "literal",
-        "startIndex": 29,
+        "startIndex": 38,
         "value": 8,
         "style": "naked",
-        "endIndex": 30
+        "endIndex": 39
     },
     {
         "type": "op",
-        "startIndex": 31,
-        "endIndex": 32,
+        "startIndex": 40,
+        "endIndex": 41,
         "op": "ADDITION",
         "value": {
             "type": "math",
@@ -116,20 +116,20 @@
     },
     {
         "type": "prop-ref",
-        "startIndex": 33,
-        "endIndex": 40,
+        "startIndex": 42,
+        "endIndex": 49,
         "value": "{sales}",
         "prop": "sales"
     },
     {
         "type": "group-end",
-        "startIndex": 40,
-        "endIndex": 41
+        "startIndex": 49,
+        "endIndex": 50
     },
     {
         "type": "op",
-        "startIndex": 42,
-        "endIndex": 43,
+        "startIndex": 51,
+        "endIndex": 52,
         "op": "DIVISION",
         "value": {
             "type": "math",
@@ -140,20 +140,20 @@
     },
     {
         "type": "prop-ref",
-        "startIndex": 44,
-        "endIndex": 52,
+        "startIndex": 53,
+        "endIndex": 61,
         "value": "{profit}",
         "prop": "profit"
     },
     {
         "type": "group-end",
-        "startIndex": 52,
-        "endIndex": 53
+        "startIndex": 61,
+        "endIndex": 62
     },
     {
         "type": "op",
-        "startIndex": 54,
-        "endIndex": 55,
+        "startIndex": 63,
+        "endIndex": 64,
         "op": "SUBTRACTION",
         "value": {
             "type": "math",
@@ -164,50 +164,50 @@
     },
     {
         "type": "func",
-        "startIndex": 56,
+        "startIndex": 65,
         "value": "COUNT",
-        "endIndex": 61
+        "endIndex": 70
     },
     {
         "type": "func-arg-start",
-        "startIndex": 61,
-        "endIndex": 62
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 62,
-        "endIndex": 70,
-        "value": "{gnomes}",
-        "prop": "gnomes"
-    },
-    {
-        "type": "func-arg-sep",
         "startIndex": 70,
         "endIndex": 71
     },
     {
         "type": "prop-ref",
-        "startIndex": 72,
-        "endIndex": 80,
+        "startIndex": 71,
+        "endIndex": 79,
+        "value": "{gnomes}",
+        "prop": "gnomes"
+    },
+    {
+        "type": "func-arg-sep",
+        "startIndex": 79,
+        "endIndex": 80
+    },
+    {
+        "type": "prop-ref",
+        "startIndex": 81,
+        "endIndex": 89,
         "value": "{horses}",
         "prop": "horses"
     },
     {
         "type": "func-arg-sep",
-        "startIndex": 80,
-        "endIndex": 81
+        "startIndex": 89,
+        "endIndex": 90
     },
     {
         "type": "prop-ref",
-        "startIndex": 82,
-        "endIndex": 90,
+        "startIndex": 91,
+        "endIndex": 99,
         "value": "{apples}",
         "prop": "apples"
     },
     {
         "type": "op",
-        "startIndex": 91,
-        "endIndex": 92,
+        "startIndex": 100,
+        "endIndex": 101,
         "op": "ADDITION",
         "value": {
             "type": "math",
@@ -218,32 +218,32 @@
     },
     {
         "type": "literal",
-        "startIndex": 93,
+        "startIndex": 102,
         "value": 6,
         "style": "naked",
-        "endIndex": 94
+        "endIndex": 103
     },
     {
         "type": "func-arg-sep",
-        "startIndex": 94,
-        "endIndex": 95
+        "startIndex": 103,
+        "endIndex": 104
     },
     {
         "type": "group-start",
-        "startIndex": 96,
-        "endIndex": 97
+        "startIndex": 105,
+        "endIndex": 106
     },
     {
         "type": "prop-ref",
-        "startIndex": 97,
-        "endIndex": 103,
+        "startIndex": 106,
+        "endIndex": 112,
         "value": "{apes}",
         "prop": "apes"
     },
     {
         "type": "op",
-        "startIndex": 104,
-        "endIndex": 105,
+        "startIndex": 113,
+        "endIndex": 114,
         "op": "ADDITION",
         "value": {
             "type": "math",
@@ -254,19 +254,19 @@
     },
     {
         "type": "literal",
-        "startIndex": 106,
+        "startIndex": 115,
         "value": 1,
         "style": "naked",
-        "endIndex": 107
+        "endIndex": 116
     },
     {
         "type": "group-end",
-        "startIndex": 107,
-        "endIndex": 108
+        "startIndex": 116,
+        "endIndex": 117
     },
     {
         "type": "func-arg-end",
-        "startIndex": 108,
-        "endIndex": 109
+        "startIndex": 117,
+        "endIndex": 118
     }
 ]

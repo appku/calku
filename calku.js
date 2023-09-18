@@ -225,9 +225,6 @@ class CalKu {
                     } else {
                         expectedTokenType = TokenType.FuncArgumentsEnd;
                     }
-                    if (!expectedTokenType) {
-                        throw new SyntaxError(`Failed to tokenize expression: The closing parenthesis at position ${i} could not be matched to any opening parenthesis.`);
-                    }
                     newToken = {
                         type: expectedTokenType,
                         startIndex: i,
@@ -432,6 +429,67 @@ class CalKu {
      */
     static values(expression, targets, timeZone) {
         return new CalKu(expression, timeZone).values(targets);
+    }
+
+    /**
+     * Extracts value from the `target` object by traversing the dot-notated and indexed `path` to locate the 
+     * appropriate value in a complex object.
+     * 
+     * - A dot "." indicates traversal into a (sub-)object property.
+     * - A colon ":" followed by a 0...n number indicates an array index.
+     * 
+     * If the path cannot be fully traversed, an `undefined` value is returned.
+     * 
+     * Function property values are not returned, called, or traversed by this method, though they may be included
+     * as part of a returned object. Instead of a function value, a value of `undefined` will be returned.
+     * 
+     * @example
+     * ```
+     * let value = CalKu.valueAt('person.horses:1.age', {
+     *     person: {
+     *         horses: [
+     *             { age: 22, name: 'professor' },
+     *             { age: 18, name: 'margles' },
+     *             { age: 4, name: 'whinny' },
+     *         ]
+     *     }
+     * });
+     * //value = 18
+     * ```
+     * @throws Error if the path is not specified or not a string.
+     * @throws Error if the path contains an empty segment.
+     * @throws Error if any segment in the path contains restricted keywords: "prototype", "constructor", "__proto__".
+     * @param {String} path - The dot-notated and indexed path to the value (property).
+     * @param {Object} target - The object to traverse. If the target is not specified, `undefined` is returned.
+     */
+    static valueAt(path, target) {
+        if (!path || typeof path !== 'string') {
+            throw new Error('Invalid path to property. A text string path is required.');
+        }
+        if (typeof target !== 'undefined' && target != null) {
+            let parts = path.split(/\.|:/);
+            let val = target;
+            for (let i = 0; i < parts.length; i++) {
+                let segment = parts[i];
+                if (segment === 'prototype' || segment === 'constructor' || segment === '__proto__') {
+                    throw new Error(`Invalid path to property. The path contains an invalid segment at position ${i} ("${segment}").`);
+                } else if (segment.length) {
+                    let vtype = typeof val[segment];
+                    if (vtype !== 'undefined' && vtype !== 'function') {
+                        val = val[segment];
+                        if (i < parts.length - 1 && val === null) {
+                            return undefined; //found a null value before the path completes.
+                        }
+                    } else {
+                        return undefined;
+                    }
+                } else {
+                    throw new Error(`Invalid path to property. The path contains an empty segment at position ${i}.`);
+                }
+            }
+            return val;
+        }
+        return undefined;
     }
 }
 
