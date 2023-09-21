@@ -21,7 +21,7 @@
     "main": "calku.js",
     "scripts": {
         "build": "npx webpack",
-        "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --verbose --coverage",
+        "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
         "test-ci": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --verbose -ci",
         "lint": "npx eslint ./",
         "docs": "npx jsdoc -c jsdoc.json -u tutorials --readme README.md",
@@ -42,7 +42,6 @@
     "engines": {
         "node": ">=18"
     },
-    "dependencies": {},
     "devDependencies": {
         "@appku/jsdoc-template": "^1.1.7",
         "@types/jest": "^27.4.1",

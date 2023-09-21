@@ -2,25 +2,6 @@ import jest from 'jest-mock';
 import CalcKu, { TokenType } from './calku.js';
 import fs from 'fs/promises';
 
-const sample = {
-    alpha: "abc",
-    hello: "yo",
-    world: "mars",
-    num: 334455,
-    yes: true,
-    no: false,
-    dateStr: "2023-03-11",
-    dateObj: new Date(),
-    detail: {
-        other: "thing",
-        more: 10,
-        less: 2,
-        args: ["a", "b", "c"],
-        others: [1, 2, 3],
-        mix: [1, true, new Date(), { test: 123 }, 'yep']
-    }
-};
-
 describe('#constructor', () => {
     it('sets the expression property.', () => {
         expect(new CalcKu().expression).toBeNull();
@@ -41,9 +22,16 @@ describe('#constructor', () => {
 
 describe('#lexer', () => {
     it('extracts grouping tokens', () => {
-        expect(new CalcKu('((10 + 10) / 4)').lexer().map(t => t.type)).toEqual([
-            'group-start', 'group-start', 'literal', 'op', 'literal', 'group-end', 'op', 'literal', 'group-end'
-        ]);
+        let results = new CalcKu('((10 + 10) / 4)').lexer();
+        expect(Array.isArray(results)).toBe(true);
+        expect(results.length).toBe(1);
+        expect(results[0].type).toBe('group');
+        expect(results[0].value[0].type).toBe('group');
+        expect(results[0].value[0].value.map(t => t.type)).toEqual(['literal', 'op', 'literal']);
+        expect(results[0].value[1].type).toBe('op');
+        expect(results[0].value[1].op).toBe('DIVISION');
+        expect(results[0].value[2].type).toBe('literal');
+        expect(results[0].value[2].value).toBe(4);
     });
     it('extracts naked literals', () => {
         let tests = ['hellothere', 'true', 'false', '2023-09-09', '123'];
@@ -77,8 +65,9 @@ describe('#lexer', () => {
         ]);
     });
     it('extracts tokens for a complicated, nested expression.', async () => {
-        let test = '(10 + 2 / {person.age:4} + ({qty} * ((8 + {sales}) / {profit}) - COUNT({gnomes}, {horses}, {apples} + 6, ({apes} + 1))'
+        let test = '3 + (10 + 2 / {person.age:4} + ({qty} * ((8 + {sales}) / {profit}) - COUNT({gnomes}, {horses}, {apples} + 6, ({apes} + 1))';
         let content = await fs.readFile('./test/lexer-complicated.json', 'utf-8');
+        // fs.writeFile('./test/lexer-complicated.json', JSON.stringify(new CalcKu(test).lexer(), null, 4), 'utf-8');
         expect(new CalcKu(test).lexer()).toEqual(JSON.parse(content));
     });
 });
@@ -344,9 +333,40 @@ describe('.valueAt', () => {
                 arrPirates: [null, undefined, false, 0],
                 cool: true
             }
-        }
+        };
         for (let t of tests) {
             expect(CalcKu.valueAt(t[0], sample)).toEqual(t[1]);
         }
     });
 });
+
+// describe.only('#value', () => {
+//     const sample = {
+//         alpha: "abc",
+//         hello: "yo",
+//         world: "mars",
+//         num: 334455,
+//         yes: true,
+//         no: false,
+//         dateStr: "2023-03-11",
+//         dateObj: new Date(),
+//         detail: {
+//             other: "thing",
+//             more: 10,
+//             less: 2,
+//             args: ["a", "b", "c"],
+//             others: [1, 2, 3],
+//             mix: [1, true, new Date(), { test: 123 }, 'yep']
+//         }
+//     };
+//     let tests = [
+//         ['10 + 5 - 1', 14],
+//         ['(10 + 5 - 1) / 7', 2],
+//         ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25], //test order of operations, should be `(15 - 8) + (1 + .25)` or `7 + 1.25`
+//     ];
+//     for (let t of tests) {
+//         it(`expression "${t[0]}" should evaluate to ${typeof t[1] === 'string' ? `"${t[1]}"` : t[1]} on sample.`, () => {
+//             expect(new CalcKu(t[0]).value(sample)).toBe(t[1]);
+//         });
+//     }
+// });

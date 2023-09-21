@@ -1,272 +1,284 @@
 [
     {
-        "type": "group-start",
+        "type": "literal",
         "startIndex": 0,
+        "value": 3,
+        "style": "naked",
         "endIndex": 1
     },
     {
-        "type": "literal",
-        "startIndex": 1,
-        "value": 10,
-        "style": "naked",
-        "endIndex": 3
+        "type": "op",
+        "startIndex": 2,
+        "endIndex": 3,
+        "op": "ADDITION",
+        "value": {
+            "type": "math",
+            "symbols": [
+                "+"
+            ]
+        }
     },
     {
-        "type": "op",
+        "type": "group",
         "startIndex": 4,
-        "endIndex": 5,
-        "op": "ADDITION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "+"
-            ]
-        }
-    },
-    {
-        "type": "literal",
-        "startIndex": 6,
-        "value": 2,
-        "style": "naked",
-        "endIndex": 7
-    },
-    {
-        "type": "op",
-        "startIndex": 8,
-        "endIndex": 9,
-        "op": "DIVISION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "/"
-            ]
-        }
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 10,
-        "endIndex": 24,
-        "value": "{person.age:4}",
-        "prop": "person.age:4"
-    },
-    {
-        "type": "op",
-        "startIndex": 25,
-        "endIndex": 26,
-        "op": "ADDITION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "+"
-            ]
-        }
-    },
-    {
-        "type": "group-start",
-        "startIndex": 27,
-        "endIndex": 28
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 28,
-        "endIndex": 33,
-        "value": "{qty}",
-        "prop": "qty"
-    },
-    {
-        "type": "op",
-        "startIndex": 34,
-        "endIndex": 35,
-        "op": "MULTIPLICATION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "*"
-            ]
-        }
-    },
-    {
-        "type": "group-start",
-        "startIndex": 36,
-        "endIndex": 37
-    },
-    {
-        "type": "group-start",
-        "startIndex": 37,
-        "endIndex": 38
-    },
-    {
-        "type": "literal",
-        "startIndex": 38,
-        "value": 8,
-        "style": "naked",
-        "endIndex": 39
-    },
-    {
-        "type": "op",
-        "startIndex": 40,
-        "endIndex": 41,
-        "op": "ADDITION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "+"
-            ]
-        }
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 42,
-        "endIndex": 49,
-        "value": "{sales}",
-        "prop": "sales"
-    },
-    {
-        "type": "group-end",
-        "startIndex": 49,
-        "endIndex": 50
-    },
-    {
-        "type": "op",
-        "startIndex": 51,
-        "endIndex": 52,
-        "op": "DIVISION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "/"
-            ]
-        }
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 53,
-        "endIndex": 61,
-        "value": "{profit}",
-        "prop": "profit"
-    },
-    {
-        "type": "group-end",
-        "startIndex": 61,
-        "endIndex": 62
-    },
-    {
-        "type": "op",
-        "startIndex": 63,
-        "endIndex": 64,
-        "op": "SUBTRACTION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "-"
-            ]
-        }
-    },
-    {
-        "type": "func",
-        "startIndex": 65,
-        "value": "COUNT",
-        "endIndex": 70
-    },
-    {
-        "type": "func-arg-start",
-        "startIndex": 70,
-        "endIndex": 71
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 71,
-        "endIndex": 79,
-        "value": "{gnomes}",
-        "prop": "gnomes"
-    },
-    {
-        "type": "func-arg-sep",
-        "startIndex": 79,
-        "endIndex": 80
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 81,
-        "endIndex": 89,
-        "value": "{horses}",
-        "prop": "horses"
-    },
-    {
-        "type": "func-arg-sep",
-        "startIndex": 89,
-        "endIndex": 90
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 91,
-        "endIndex": 99,
-        "value": "{apples}",
-        "prop": "apples"
-    },
-    {
-        "type": "op",
-        "startIndex": 100,
-        "endIndex": 101,
-        "op": "ADDITION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "+"
-            ]
-        }
-    },
-    {
-        "type": "literal",
-        "startIndex": 102,
-        "value": 6,
-        "style": "naked",
-        "endIndex": 103
-    },
-    {
-        "type": "func-arg-sep",
-        "startIndex": 103,
-        "endIndex": 104
-    },
-    {
-        "type": "group-start",
-        "startIndex": 105,
-        "endIndex": 106
-    },
-    {
-        "type": "prop-ref",
-        "startIndex": 106,
-        "endIndex": 112,
-        "value": "{apes}",
-        "prop": "apes"
-    },
-    {
-        "type": "op",
-        "startIndex": 113,
-        "endIndex": 114,
-        "op": "ADDITION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "+"
-            ]
-        }
-    },
-    {
-        "type": "literal",
-        "startIndex": 115,
-        "value": 1,
-        "style": "naked",
-        "endIndex": 116
-    },
-    {
-        "type": "group-end",
-        "startIndex": 116,
-        "endIndex": 117
-    },
-    {
-        "type": "func-arg-end",
-        "startIndex": 117,
-        "endIndex": 118
+        "value": [
+            {
+                "type": "literal",
+                "startIndex": 5,
+                "value": 10,
+                "style": "naked",
+                "endIndex": 7
+            },
+            {
+                "type": "op",
+                "startIndex": 8,
+                "endIndex": 9,
+                "op": "ADDITION",
+                "value": {
+                    "type": "math",
+                    "symbols": [
+                        "+"
+                    ]
+                }
+            },
+            {
+                "type": "literal",
+                "startIndex": 10,
+                "value": 2,
+                "style": "naked",
+                "endIndex": 11
+            },
+            {
+                "type": "op",
+                "startIndex": 12,
+                "endIndex": 13,
+                "op": "DIVISION",
+                "value": {
+                    "type": "math",
+                    "symbols": [
+                        "/"
+                    ]
+                }
+            },
+            {
+                "type": "prop-ref",
+                "startIndex": 14,
+                "endIndex": 28,
+                "value": "{person.age:4}",
+                "prop": "person.age:4"
+            },
+            {
+                "type": "op",
+                "startIndex": 29,
+                "endIndex": 30,
+                "op": "ADDITION",
+                "value": {
+                    "type": "math",
+                    "symbols": [
+                        "+"
+                    ]
+                }
+            },
+            {
+                "type": "group",
+                "startIndex": 31,
+                "value": [
+                    {
+                        "type": "prop-ref",
+                        "startIndex": 32,
+                        "endIndex": 37,
+                        "value": "{qty}",
+                        "prop": "qty"
+                    },
+                    {
+                        "type": "op",
+                        "startIndex": 38,
+                        "endIndex": 39,
+                        "op": "MULTIPLICATION",
+                        "value": {
+                            "type": "math",
+                            "symbols": [
+                                "*"
+                            ]
+                        }
+                    },
+                    {
+                        "type": "group",
+                        "startIndex": 40,
+                        "value": [
+                            {
+                                "type": "group",
+                                "startIndex": 41,
+                                "value": [
+                                    {
+                                        "type": "literal",
+                                        "startIndex": 42,
+                                        "value": 8,
+                                        "style": "naked",
+                                        "endIndex": 43
+                                    },
+                                    {
+                                        "type": "op",
+                                        "startIndex": 44,
+                                        "endIndex": 45,
+                                        "op": "ADDITION",
+                                        "value": {
+                                            "type": "math",
+                                            "symbols": [
+                                                "+"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "prop-ref",
+                                        "startIndex": 46,
+                                        "endIndex": 53,
+                                        "value": "{sales}",
+                                        "prop": "sales"
+                                    }
+                                ],
+                                "endIndex": 54
+                            },
+                            {
+                                "type": "op",
+                                "startIndex": 55,
+                                "endIndex": 56,
+                                "op": "DIVISION",
+                                "value": {
+                                    "type": "math",
+                                    "symbols": [
+                                        "/"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "prop-ref",
+                                "startIndex": 57,
+                                "endIndex": 65,
+                                "value": "{profit}",
+                                "prop": "profit"
+                            }
+                        ],
+                        "endIndex": 66
+                    },
+                    {
+                        "type": "op",
+                        "startIndex": 67,
+                        "endIndex": 68,
+                        "op": "SUBTRACTION",
+                        "value": {
+                            "type": "math",
+                            "symbols": [
+                                "-"
+                            ]
+                        }
+                    },
+                    {
+                        "type": "func",
+                        "startIndex": 69,
+                        "value": "COUNT",
+                        "endIndex": 74
+                    },
+                    {
+                        "type": "func-arg-start",
+                        "startIndex": 74,
+                        "endIndex": 75
+                    },
+                    {
+                        "type": "prop-ref",
+                        "startIndex": 75,
+                        "endIndex": 83,
+                        "value": "{gnomes}",
+                        "prop": "gnomes"
+                    },
+                    {
+                        "type": "func-arg-sep",
+                        "startIndex": 83,
+                        "endIndex": 84
+                    },
+                    {
+                        "type": "prop-ref",
+                        "startIndex": 85,
+                        "endIndex": 93,
+                        "value": "{horses}",
+                        "prop": "horses"
+                    },
+                    {
+                        "type": "func-arg-sep",
+                        "startIndex": 93,
+                        "endIndex": 94
+                    },
+                    {
+                        "type": "prop-ref",
+                        "startIndex": 95,
+                        "endIndex": 103,
+                        "value": "{apples}",
+                        "prop": "apples"
+                    },
+                    {
+                        "type": "op",
+                        "startIndex": 104,
+                        "endIndex": 105,
+                        "op": "ADDITION",
+                        "value": {
+                            "type": "math",
+                            "symbols": [
+                                "+"
+                            ]
+                        }
+                    },
+                    {
+                        "type": "literal",
+                        "startIndex": 106,
+                        "value": 6,
+                        "style": "naked",
+                        "endIndex": 107
+                    },
+                    {
+                        "type": "func-arg-sep",
+                        "startIndex": 107,
+                        "endIndex": 108
+                    },
+                    {
+                        "type": "group",
+                        "startIndex": 109,
+                        "value": [
+                            {
+                                "type": "prop-ref",
+                                "startIndex": 110,
+                                "endIndex": 116,
+                                "value": "{apes}",
+                                "prop": "apes"
+                            },
+                            {
+                                "type": "op",
+                                "startIndex": 117,
+                                "endIndex": 118,
+                                "op": "ADDITION",
+                                "value": {
+                                    "type": "math",
+                                    "symbols": [
+                                        "+"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "literal",
+                                "startIndex": 119,
+                                "value": 1,
+                                "style": "naked",
+                                "endIndex": 120
+                            }
+                        ],
+                        "endIndex": 121
+                    },
+                    {
+                        "type": "func-arg-end",
+                        "startIndex": 121,
+                        "endIndex": 122
+                    }
+                ]
+            }
+        ]
     }
 ]

@@ -18,6 +18,7 @@ const USAppKuStandardDate = /^\d{1,2}\/\d{1,2}\/(\d{4}|\d\d)( \d{1,2}:\d{1,2}(:\
  * @enum {String}
  */
 const TokenType = {
+    Group: 'group', //nested tokens (post-processing)
     GroupStart: 'group-start', //(
     GroupEnd: 'group-end', //)
     Operator: 'op',
@@ -94,7 +95,7 @@ class CalKu {
     }
 
     /**
-     * @param {String} value
+     * @param {String} value - The value to be set on the `expression` property.
      */
     set expression(value) {
         this._expression = value;
@@ -114,12 +115,12 @@ class CalKu {
     }
 
     /**
-     * @param {String} value
+     * @param {String} value -  The value to be set on the `timeZone` property.
      */
     set timeZone(value) {
         let opts = null;
         if (value) {
-            let fmt = Intl.DateTimeFormat([], { timeZone: value, timeZoneName: "longOffset" });
+            let fmt = Intl.DateTimeFormat([], { timeZone: value, timeZoneName: 'longOffset' });
             let val = fmt.format(new Date());
             let result = val.match(/GMT([+-].+)?/i);
             opts = fmt.resolvedOptions();
@@ -145,7 +146,7 @@ class CalKu {
         let tokens = [];
         if (this.expression) {
             let input = this.expression;
-            let opMap = ops.toRegExp(true);
+            let opMap = ops.toRegExp('logic', 'compare', 'math');
             let openToken = null; //if this is present, it's a token that is building up it's context over multiple chars
             let openGroupingStack = []; //stores the "starting" token types discovered and still unclosed.
             //evaluate the expression one char at a time to build a sequential list of tokens
@@ -237,7 +238,7 @@ class CalKu {
                         endIndex: i + 1,
                         value: input[i]
                     };
-                    openToken = newToken
+                    openToken = newToken;
                 } else if (input[i] === '/' && input[i + 1] === '/') { //line comment
                     newToken = {
                         type: TokenType.Comment,
@@ -245,7 +246,7 @@ class CalKu {
                         endIndex: i + 3,
                         value: ''
                     };
-                    openToken = newToken
+                    openToken = newToken;
                 } else if (
                     input[i - 1] !== '\\'
                     && input[i] === ','
@@ -266,7 +267,10 @@ class CalKu {
                                 startIndex: i,
                                 endIndex: i + m[1].length,
                                 op: k,
-                                value: ops[k]
+                                value: {
+                                    type: ops[k].type,
+                                    symbols: ops[k].symbols
+                                }
                             };
                             i += m[1].length - 1;
                             break;
@@ -301,10 +305,40 @@ class CalKu {
                 token.value = this.valueParse(token.value, token.style);
             }
         }
-        //all done
-        return tokens;
-    }
+        //nest sequential tokens under group(ed) tokens.
+        let root = []; //the root array of the token tree
+        let groupStack = []; //the stack of ongoing groups in the tree.
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i];
+            if (token.type === TokenType.GroupStart) {
+                let newGroup = {
+                    type: TokenType.Group,
+                    startIndex: token.startIndex,
+                    value: []
+                };
+                if (groupStack.length) {
+                    //add to existing group
+                    groupStack[groupStack.length - 1].value.push(newGroup);
+                } else {
+                    root.push(newGroup);
+                }
+                //add to the end of the stack
+                groupStack.push(newGroup);
 
+            } else if (groupStack.length && token.type === TokenType.GroupEnd) {
+                groupStack[groupStack.length - 1].endIndex = token.endIndex; //set the proper endIndex for the group
+                groupStack.pop(); //all done
+                // throw new Error(`Invalid expression: A group (using parenthesis) was terminated ")" but was never opened.`);
+            } else if (groupStack.length) { //we're in a group
+                let g = groupStack[groupStack.length - 1].value;
+                g.push(token);
+            } else { //we're at root.
+                root.push(token);
+            }
+        }
+        //all done
+        return root;
+    }
 
     /**
      * Parses a singlular supported string representation of a value into a typed value, either a Number, String, 
@@ -337,7 +371,7 @@ class CalKu {
             } else if (ISO8601Date.test(value) || USAppKuStandardDate.test(value)) {
                 if (/([+-]\d\d:\d\d)|Z$/.test(value) === false) { //no timezone, so adjust if needed.
                     if (value.indexOf('T') === -1) {
-                        value += (this._timeZone ? ' GMT' : ' ')
+                        value += (this._timeZone ? ' GMT' : ' ');
                     }
                     if (this._timeZone?.offset) {
                         value += this._timeZone.offset;
@@ -373,6 +407,26 @@ class CalKu {
     }
 
     /**
+     * Expresses a series of tokens to resolve them into a single resulting value from the target. 
+     * @param {*} target - The target object containing properties and values used in the expression.
+     * @param {Array.<Token>} tokens - The tokens to be expressed into a resulting value.
+     * @returns {*}
+     * @protected
+     */
+    express(target, tokens) {
+        let value;
+        //loop tokens to discover any operators in order...
+        //resolve them into a value...
+        //and continue scanning.
+        for (let token of tokens) {
+            if (token.type === TokenType.Group) {
+                this.express(target, token.value);
+            }
+        }
+        return value;
+    }
+
+    /**
      * Retrieve the evaluated value from the CalKu expression. If there is an error processing the expression, it
      * will be returned (*not* thrown).
      * @param {Object} target - The target object containing properties and values used in the expression.
@@ -388,7 +442,7 @@ class CalKu {
             }
         }
         //evaluate expression
-        let tokens = this._tokenCache;
+        return this.express(target, this._tokenCache);
     }
 
     /**
@@ -400,7 +454,7 @@ class CalKu {
     values(targets) {
         let output = [];
         for (let t of targets) {
-            output.push(ck.value(t));
+            output.push(this.value(t));
         }
         return output;
     }
@@ -461,6 +515,7 @@ class CalKu {
      * @throws Error if any segment in the path contains restricted keywords: "prototype", "constructor", "__proto__".
      * @param {String} path - The dot-notated and indexed path to the value (property).
      * @param {Object} target - The object to traverse. If the target is not specified, `undefined` is returned.
+     * @returns {*}
      */
     static valueAt(path, target) {
         if (!path || typeof path !== 'string') {
@@ -495,5 +550,7 @@ class CalKu {
 
 export {
     CalKu as default,
-    TokenType
+    TokenType,
+    ops as Operations,
+    //funcs as Funcs
 };
