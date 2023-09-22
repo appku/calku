@@ -1,4 +1,5 @@
 import ops from './ops.js';
+import is from './is.js';
 
 /**
  * A regular expression to check for a reasonable ISO8601 format date.
@@ -50,8 +51,14 @@ const TokenType = {
  * omit object-specific references entirely and then evaluate without an object.
  * 
  * @example
- * "10 + (6 / 2)" //evaluates to 13 whether an object was targetted or not.
- * "10 + {person.age}" //references an object property and will error out if no object is specified.
+ * "10 + 6 / 2 * 55 ^ (2 % 1)" //use mathmatical operators, evaluated with proper order-of-operations
+ * "10 + {person.age}" //reference object properties and use their values in the expression when evaluated
+ * "(10 / 2 + 3 * ({person.count} * 2)" //use grouping with parenthesis
+ * "true OR false AND true AND 123 != 54321" //use logical conditions and comparisons
+ * "{person.numbers} CONTAINS 44 OR {person.numbers} STARTSWITH 10" //use comparisons with array values
+ * '"The" + MID("Developer", 0, 3) + "Expert"' //Use function calls
+ * 
+ * //build complex expressions that mix and combine all ^ these features! Awesome!
  */
 class CalKu {
     /**
@@ -552,5 +559,5 @@ export {
     CalKu as default,
     TokenType,
     ops as Operations,
-    //funcs as Funcs
+    is
 };
