@@ -1,3 +1,5 @@
+import is from './is.js';
+
 let _cache = {};
 
 /**
@@ -29,10 +31,8 @@ const ops = {
         symbols: ['contains', '~~'],
         order: 330,
         args: [
-            (v) => Array.isArray(v) || typeof v === 'string' ? false : 'Must be array or text string.',
-            (v) => typeof v === 'string'
-                || typeof v === 'number'
-                || typeof v === 'boolean' ? false : 'Must be a boolean, number, or text string.'
+            (v) => is(v).instanceOf('array', 'string').required(),
+            (v) => is(v).instanceOf('string', 'number', 'boolean').required()
         ],
         func: (a, b) => {
             if (a && !a.indexOf) {
@@ -46,10 +46,8 @@ const ops = {
         symbols: ['doesnotcontain', '!~~'],
         order: 335,
         args: [
-            (v) => Array.isArray(v) || typeof v === 'string' ? false : 'Must be array or text string.',
-            (v) => typeof v === 'string'
-                || typeof v === 'number'
-                || typeof v === 'boolean' ? false : 'Must be a boolean, number, or text string.'
+            (v) => is(v).instanceOf('array', 'string').required(),
+            (v) => is(v).instanceOf('string', 'number', 'boolean').required()
         ],
         func: (a, b) => {
             if (a && !a.indexOf) {
@@ -63,10 +61,8 @@ const ops = {
         symbols: ['endswith'],
         order: 330,
         args: [
-            (v) => Array.isArray(v) || typeof v === 'string' ? false : 'Must be array or text string.',
-            (v) => typeof v === 'string'
-                || typeof v === 'number'
-                || typeof v === 'boolean' ? false : 'Must be a boolean, number, or text string.'
+            (v) => is(v).instanceOf('array', 'string').required(),
+            (v) => is(v).instanceOf('string', 'number', 'boolean').required()
         ],
         func: (a, b) => {
             if (Array.isArray(a)) {
@@ -118,10 +114,8 @@ const ops = {
         symbols: ['startswith'],
         order: 330,
         args: [
-            (v) => Array.isArray(v) || typeof v === 'string' ? false : 'Must be array, text string.',
-            (v) => typeof v === 'string'
-                || typeof v === 'number'
-                || typeof v === 'boolean' ? false : 'Must be a boolean, number, or text string.'
+            (v) => is(v).instanceOf('array', 'string').required(),
+            (v) => is(v).instanceOf('string', 'number', 'boolean').required()
         ],
         func: (a, b) => {
             if (Array.isArray(a)) {

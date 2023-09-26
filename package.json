@@ -1,6 +1,6 @@
 {
     "name": "@appku/calku",
-    "version": "1.1.1",
+    "version": "0.0.1",
     "description": "CalKu is a powerful expression engine that turns text into evaluated operations that can run against objects and return a resulting value.",
     "repository": {
         "type": "git",
@@ -24,7 +24,7 @@
         "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --coverage",
         "test-ci": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --verbose -ci",
         "lint": "npx eslint ./",
-        "docs": "npx jsdoc -c jsdoc.json -u tutorials --readme README.md",
+        "docs": "npx jsdoc -c jsdoc.json --readme README.md",
         "serve-docs": "npx serve ./docs",
         "cli": "node cli/main.js"
     },
@@ -52,6 +52,7 @@
         "jsdoc": "^4.0.2",
         "jsdoc-plugin-intersection": "^1.0.4",
         "jsdoc-plugin-typescript": "^2.0.7",
-        "jsdoc-plugin-typescript-new": "^1.0.0"
+        "jsdoc-plugin-typescript-new": "^1.0.0",
+        "serve": "^14.2.1"
     }
 }
