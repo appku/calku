@@ -1,4 +1,5 @@
 import ops from './ops.js';
+import funcs from './funcs.js';
 import is from './is.js';
 
 /**
@@ -37,6 +38,7 @@ const TokenType = {
  * @property {TokenType} type
  * @property {Number} startIndex
  * @property {Number} endIndex
+ * @property {Number} [order]
  * @property {String} [style]
  * @property {String} [value]
  */
@@ -145,6 +147,7 @@ class CalKu {
      * be thrown. The tokens are sequential, as ordered from the expression text. 
      * These tokens are not evaluated, so they may express a valid or invalid expression.
      * @throws Error when the expression syntax is invalid.
+     * @throws Error when the function is unknown or not supported.
      * @returns {Array.<Token>}
      * @protected
      */
@@ -181,18 +184,19 @@ class CalKu {
                         i++; //skip next char
                     } else if (openToken.style === 'naked' && /^\s*\(/.test(sub)) { //looks like a function call
                         //convert from literal to function token
-                        openToken.type = TokenType.Func;
-                        openToken.endIndex = i;
+                        let argStartIndex = sub.indexOf('(');
+                        openToken.type = TokenType.FuncArgumentsStart;
+                        openToken.endIndex = i + argStartIndex + 1;
+                        openToken.func = openToken.value;
+                        if (typeof funcs[openToken.func] === 'undefined') {
+                            throw new SyntaxError(`Unknown or un-supported function "${openToken.func}" "${sub}" at index ${i}.`);
+                        }
+                        delete openToken.value;
                         delete openToken.style;
                         //indicate start of args
-                        let argStartIndex = sub.indexOf('(');
-                        newToken = {
-                            type: TokenType.FuncArgumentsStart,
-                            startIndex: i + argStartIndex,
-                            endIndex: i + argStartIndex + 1
-                        };
+                        // newToken = openToken;
+                        // openToken = null;
                         i += argStartIndex; //skip past any whitespace
-                        openToken = null;
                         openGroupingStack.push(TokenType.FuncArgumentsStart);
                     } else if (openToken.style === 'naked' && /\s|\(|\)|\{|\}/i.test(input[i])) {
                         openToken.endIndex = i;
@@ -273,11 +277,7 @@ class CalKu {
                                 type: TokenType.Operator,
                                 startIndex: i,
                                 endIndex: i + m[1].length,
-                                op: k,
-                                value: {
-                                    type: ops[k].type,
-                                    symbols: ops[k].symbols
-                                }
+                                op: k
                             };
                             i += m[1].length - 1;
                             break;
@@ -317,32 +317,40 @@ class CalKu {
         let groupStack = []; //the stack of ongoing groups in the tree.
         for (let i = 0; i < tokens.length; i++) {
             let token = tokens[i];
-            if (token.type === TokenType.GroupStart) {
-                let newGroup = {
-                    type: TokenType.Group,
-                    startIndex: token.startIndex,
-                    value: []
-                };
+            if (token.type === TokenType.GroupStart || token.type === TokenType.FuncArgumentsStart) {
+                let newGroup = null;
+                if (token.type === TokenType.GroupStart) {
+                    newGroup = {
+                        type: TokenType.Group,
+                        startIndex: token.startIndex,
+                        tokens: []
+                    };
+                } else {
+                    newGroup = {
+                        type: TokenType.Func,
+                        startIndex: token.startIndex,
+                        func: token.func,
+                        tokens: []
+                    };
+                }
                 if (groupStack.length) {
                     //add to existing group
-                    groupStack[groupStack.length - 1].value.push(newGroup);
+                    groupStack[groupStack.length - 1].tokens.push(newGroup);
                 } else {
                     root.push(newGroup);
                 }
                 //add to the end of the stack
                 groupStack.push(newGroup);
-
-            } else if (groupStack.length && token.type === TokenType.GroupEnd) {
+            } else if (groupStack.length && (token.type === TokenType.GroupEnd || token.type === TokenType.FuncArgumentsEnd)) {
                 groupStack[groupStack.length - 1].endIndex = token.endIndex; //set the proper endIndex for the group
                 groupStack.pop(); //all done
-                // throw new Error(`Invalid expression: A group (using parenthesis) was terminated ")" but was never opened.`);
             } else if (groupStack.length) { //we're in a group
-                let g = groupStack[groupStack.length - 1].value;
-                g.push(token);
+                groupStack[groupStack.length - 1].tokens.push(token);
             } else { //we're at root.
                 root.push(token);
             }
         }
+        //nest function call arguments
         //all done
         return root;
     }
@@ -393,18 +401,33 @@ class CalKu {
     }
 
     /**
-     * Returns an array of the distinct dot-notated object properties used within the expression (if any).
+     * Returns an array of the distinct dot-notated object properties used within the expression (if any) given
+     * the array of `Token` objects.
+     * @param {Array.<Token>} [tokens] - An array of tokens to evaluate. If `undefined`, the current expression's
+     * tokens will be used.
      * @returns {Array.<String>}
+     * @protected
      */
-    properties() {
-        //lazy load cached tokens (lexing is expensive!)
-        if (!this._tokenCache) {
-            this._tokenCache = this.lexer();
-        }
+    propertiesOf(tokens) {
         let props = [];
-        let tokens = this._tokenCache;
+        if (typeof tokens === 'undefined') {
+            //lazy load cached tokens (lexing is expensive!)
+            if (!this._tokenCache) {
+                this._tokenCache = this.lexer();
+            }
+            tokens = this._tokenCache;
+        }
+        //gather distinct list of props from all tokens
         for (let t of tokens) {
-            if (t.type === TokenType.PropertyRef
+            if ((t.type === TokenType.Group || t.type === TokenType.Func) && t.tokens?.length) {
+                //nested array of tokens, recurse into...
+                let resultProps = this.propertiesOf(t.tokens);
+                for (let rp of resultProps) {
+                    if (props.some(v => v === rp) === false) {
+                        props.push(rp);
+                    }
+                }
+            } else if (t.type === TokenType.PropertyRef
                 && t.prop
                 && props.some(v => v === t.prop) === false) {
                 props.push(t.prop);
@@ -414,20 +437,78 @@ class CalKu {
     }
 
     /**
+     * Returns an array of the distinct dot-notated object properties used within the expression (if any).
+     * @returns {Array.<String>}
+     */
+    properties() {
+        return this.propertiesOf();
+    }
+
+    /**
      * Expresses a series of tokens to resolve them into a single resulting value from the target. 
      * @param {*} target - The target object containing properties and values used in the expression.
-     * @param {Array.<Token>} tokens - The tokens to be expressed into a resulting value.
+     * @param {Array.<Token>} [tokens] - An array of tokens to evaluate. If `undefined`, the current expression's
+     * tokens will be used.
      * @returns {*}
      * @protected
      */
-    express(target, tokens) {
+    valueOf(target, tokens) {
         let value;
-        //loop tokens to discover any operators in order...
-        //resolve them into a value...
-        //and continue scanning.
+        if (typeof tokens === 'undefined') {
+            //lazy load cached tokens (lexing is expensive!)
+            if (!this._tokenCache) {
+                this._tokenCache = this.lexer();
+            }
+            tokens = this._tokenCache;
+        }
+        //loop tokens to discover any operators in order and resolve to value.
+        //go into deepest group(s) and process functions first
         for (let token of tokens) {
             if (token.type === TokenType.Group) {
-                this.express(target, token.value);
+                token.value = this.valueOf(target, token.tokens);
+            } else if (token.type === TokenType.Func && token.tokens?.length) {
+                for (let argToken of token.tokens) {
+                    if (argToken.type === TokenType.Group) {
+                        argToken.value = this.valueOf(target, argToken.tokens);
+                    }
+                }
+            }
+        }
+        //resolve function calls.
+        for (let token of tokens) {
+            if (token.type === TokenType.Func) {
+                if (token.args === 0 || !token.tokens?.length) {
+                    token.value = funcs[token.func].func.call(target);
+                } else {
+                    let args = [];
+                    let argTokenGroups = [];
+                    //split tokens by the separator
+
+                    //evaluate each argument set of argument tokens (1..n), split by separator.
+                    //TODO
+                    token.value = funcs[token.func].func.call(target, ...args);
+                }
+            }
+        }
+        //walk through all top-level tokens and perform operations (in order) to net a resulting value.
+        let orderedOps = ops.ordered();
+        for (let opKey of orderedOps) {
+            for (let i = 0; i < tokens.length; i++) {
+                let token = tokens[i];
+                if (i === 0) {
+                    value = token.value;
+                } else if (token.type === TokenType.Operator) {
+                    if (i === tokens.length - 1) {
+                        throw new SyntaxError(`Operator "${token.symbols.join(', ')}" has no subsequent value at index ${token.startIndex}.`);
+                    }
+                    if (typeof tokens[i + 1].value === 'undefined') {
+                        throw new SyntaxError(`Evaluation of expression failed to determine a value from the statement beginning at index ${token.startIndex}.`);
+                    }
+                    value = ops[token.op].func.call(target, value, tokens[i + 1]?.value);
+                    i++; //move past next token
+                } else {
+                    throw new SyntaxError(`Unexpected token at index ${token.startIndex}.`);
+                }
             }
         }
         return value;
@@ -440,16 +521,7 @@ class CalKu {
      * @returns {String | Number | Date | Boolean | Error}
      */
     value(target) {
-        //lazy load cached tokens (lexing is expensive!)
-        if (!this._tokenCache) {
-            try {
-                this._tokenCache = this.lexer();
-            } catch (err) {
-                return err;
-            }
-        }
-        //evaluate expression
-        return this.express(target, this._tokenCache);
+        return this.valueOf(target);
     }
 
     /**
@@ -501,7 +573,7 @@ class CalKu {
      * 
      * If the path cannot be fully traversed, an `undefined` value is returned.
      * 
-     * Function property values are not returned, called, or traversed by this method, though they may be included
+     * Function type property values are not returned, called, or traversed by this method, though they may be included
      * as part of a returned object. Instead of a function value, a value of `undefined` will be returned.
      * 
      * @example

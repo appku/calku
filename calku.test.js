@@ -26,12 +26,12 @@ describe('#lexer', () => {
         expect(Array.isArray(results)).toBe(true);
         expect(results.length).toBe(1);
         expect(results[0].type).toBe('group');
-        expect(results[0].value[0].type).toBe('group');
-        expect(results[0].value[0].value.map(t => t.type)).toEqual(['literal', 'op', 'literal']);
-        expect(results[0].value[1].type).toBe('op');
-        expect(results[0].value[1].op).toBe('DIVISION');
-        expect(results[0].value[2].type).toBe('literal');
-        expect(results[0].value[2].value).toBe(4);
+        expect(results[0].tokens[0].type).toBe('group');
+        expect(results[0].tokens[0].tokens.map(t => t.type)).toEqual(['literal', 'op', 'literal']);
+        expect(results[0].tokens[1].type).toBe('op');
+        expect(results[0].tokens[1].op).toBe('DIVISION');
+        expect(results[0].tokens[2].type).toBe('literal');
+        expect(results[0].tokens[2].value).toBe(4);
     });
     it('extracts naked literals', () => {
         let tests = ['hellothere', 'true', 'false', '2023-09-09', '123'];
@@ -54,9 +54,14 @@ describe('#lexer', () => {
         }
     });
     it('extracts functions and args', () => {
-        expect(new CalcKu('COUNT()').lexer().map(t => t.type)).toEqual(['func', 'func-arg-start', 'func-arg-end']);
-        expect(new CalcKu('COUNT(10, 20)').lexer().map(t => t.type)).toEqual([
-            'func', 'func-arg-start', 'literal', 'func-arg-sep', 'literal', 'func-arg-end'
+        expect(new CalcKu('COUNT()').lexer().map(t => t.type)).toEqual(['func']);
+        expect(new CalcKu('COUNT(10, 20)').lexer().map(t => t.type)).toEqual(['func']);
+        expect(new CalcKu('COUNT(10, 20)').lexer()[0].tokens.map(t => t.type)).toEqual([
+            'literal', 'func-arg-sep', 'literal'
+        ]);
+        expect(new CalcKu('COUNT(10, (10 + 20 / (4+4)))').lexer().map(t => t.type)).toEqual(['func']);
+        expect(new CalcKu('COUNT(10, (10 + 20 / (4+4)))').lexer()[0].tokens.map(t => t.type)).toEqual([
+            'literal', 'func-arg-sep', 'group'
         ]);
     });
     it('extracts line comments', () => {
@@ -257,8 +262,12 @@ describe('#properties', () => {
         let tests = [
             ['10 + 3 + {age} / {person.songs}', ['age', 'person.songs']],
             [
-                '10 + 3 + {age} / {person.songs} + (SUM({age})) && true && EMPTY({person.horses})',
+                '10 + 3 + {age} / {person.songs} + (SUM({age})) && true && ISEMPTY({person.horses})',
                 ['age', 'person.songs', 'person.horses']
+            ],
+            [
+                '10 + 3 + {age} / {person.songs} + (SUM({age})) && true && ISEMPTY({person.horses} || (3 + COUNT({toggles.two})))',
+                ['age', 'person.songs', 'person.horses', 'toggles.two']
             ],
         ];
         for (let t of tests) {
@@ -340,33 +349,37 @@ describe('.valueAt', () => {
     });
 });
 
-// describe.only('#value', () => {
-//     const sample = {
-//         alpha: "abc",
-//         hello: "yo",
-//         world: "mars",
-//         num: 334455,
-//         yes: true,
-//         no: false,
-//         dateStr: "2023-03-11",
-//         dateObj: new Date(),
-//         detail: {
-//             other: "thing",
-//             more: 10,
-//             less: 2,
-//             args: ["a", "b", "c"],
-//             others: [1, 2, 3],
-//             mix: [1, true, new Date(), { test: 123 }, 'yep']
-//         }
-//     };
-//     let tests = [
-//         ['10 + 5 - 1', 14],
-//         ['(10 + 5 - 1) / 7', 2],
-//         ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25], //test order of operations, should be `(15 - 8) + (1 + .25)` or `7 + 1.25`
-//     ];
-//     for (let t of tests) {
-//         it(`expression "${t[0]}" should evaluate to ${typeof t[1] === 'string' ? `"${t[1]}"` : t[1]} on sample.`, () => {
-//             expect(new CalcKu(t[0]).value(sample)).toBe(t[1]);
-//         });
-//     }
-// });
+describe.only('#value', () => {
+    const sample = {
+        alpha: 'abc',
+        hello: 'yo',
+        world: 'mars',
+        num: 334455,
+        yes: true,
+        no: false,
+        dateStr: '2023-03-11',
+        dateObj: new Date(),
+        detail: {
+            other: 'thing',
+            more: 10,
+            less: 2,
+            args: ['a', 'b', 'c'],
+            others: [1, 2, 3],
+            mix: [1, true, new Date(), { test: 123 }, 'yep']
+        }
+    };
+    let tests = [
+        ['10 + 5 - 1', 14],
+        // ['(10 + (5 - 1)) / 7', 2],
+        ['10 + 5 - 12 / 3 * 2', 7], //order of operations
+        ['HELLOWORLD()', 'Hello world.'],
+        // ['SUM(1, 2, 3)', 6],
+        // ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25], //test order of operations, should be `(15 - 8) + (1 + .25)` or `7 + 1.25`
+    ];
+    for (let t of tests) {
+        it(`expression "${t[0]}" should evaluate to ${typeof t[1] === 'string' ? `"${t[1]}"` : t[1]} on sample.`, () => {
+            // console.log(JSON.stringify(new CalcKu(t[0]).lexer(), null, 4));
+            expect(new CalcKu(t[0]).value(sample)).toBe(t[1]);
+        });
+    }
+});

@@ -208,29 +208,25 @@ describe('compare ops work as expected and always return a boolean.', () => {
 
 describe('math ops work as expected and always return a number.', () => {
     //Alphabetical order please...
-    it('ADDITION', () => { });
+    it('ADDITION', () => { 
+        let tests = [
+            [null, null, 0],
+            [0, null, 0],
+            [null, 0, 0],
+            [0, 0, 0],
+            [1, 2, 3],
+            [-5.2, 4, -1.2],
+            [4, -4, 0],
+            [-4, -4, -8],
+            [-1.223424234, 2.0000001, 0.776575866]
+        ];
+        for (let t of tests) {
+            expect(ops.ADDITION.func(t[0], t[1])).toBeCloseTo(t[2], 14);
+        }
+    });
     it('DIVISION', () => { });
     it('EXPONENTIATION', () => { });
     it('MODULO', () => { });
     it('MULTIPLICATION', () => { });
     it('SUBTRACTION', () => { });
-});
-
-describe('function ops work as expected.', () => {
-    //Alphabetical order please...
-    it('ABS', () => { });
-    it('CEIL', () => { });
-    it('COUNT', () => { });
-    it('FLOOR', () => { });
-    it('ISEMPTY', () => { });
-    it('ISNOTEMPTY', () => { });
-    it('ISNOTNULL', () => { });
-    it('ISNULL', () => { });
-    it('LEFT', () => { });
-    it('LEN', () => { });
-    it('MID', () => { });
-    it('RIGHT', () => { });
-    it('SQRT', () => { });
-    it('SUM', () => { });
-    it('TRUNCATE', () => { });
 });

@@ -21,7 +21,7 @@
     {
         "type": "group",
         "startIndex": 4,
-        "value": [
+        "tokens": [
             {
                 "type": "literal",
                 "startIndex": 5,
@@ -82,7 +82,7 @@
             {
                 "type": "group",
                 "startIndex": 31,
-                "value": [
+                "tokens": [
                     {
                         "type": "prop-ref",
                         "startIndex": 32,
@@ -105,11 +105,11 @@
                     {
                         "type": "group",
                         "startIndex": 40,
-                        "value": [
+                        "tokens": [
                             {
                                 "type": "group",
                                 "startIndex": 41,
-                                "value": [
+                                "tokens": [
                                     {
                                         "type": "literal",
                                         "startIndex": 42,
@@ -176,84 +176,43 @@
                     {
                         "type": "func",
                         "startIndex": 69,
-                        "value": "COUNT",
-                        "endIndex": 74
-                    },
-                    {
-                        "type": "func-arg-start",
-                        "startIndex": 74,
-                        "endIndex": 75
-                    },
-                    {
-                        "type": "prop-ref",
-                        "startIndex": 75,
-                        "endIndex": 83,
-                        "value": "{gnomes}",
-                        "prop": "gnomes"
-                    },
-                    {
-                        "type": "func-arg-sep",
-                        "startIndex": 83,
-                        "endIndex": 84
-                    },
-                    {
-                        "type": "prop-ref",
-                        "startIndex": 85,
-                        "endIndex": 93,
-                        "value": "{horses}",
-                        "prop": "horses"
-                    },
-                    {
-                        "type": "func-arg-sep",
-                        "startIndex": 93,
-                        "endIndex": 94
-                    },
-                    {
-                        "type": "prop-ref",
-                        "startIndex": 95,
-                        "endIndex": 103,
-                        "value": "{apples}",
-                        "prop": "apples"
-                    },
-                    {
-                        "type": "op",
-                        "startIndex": 104,
-                        "endIndex": 105,
-                        "op": "ADDITION",
-                        "value": {
-                            "type": "math",
-                            "symbols": [
-                                "+"
-                            ]
-                        }
-                    },
-                    {
-                        "type": "literal",
-                        "startIndex": 106,
-                        "value": 6,
-                        "style": "naked",
-                        "endIndex": 107
-                    },
-                    {
-                        "type": "func-arg-sep",
-                        "startIndex": 107,
-                        "endIndex": 108
-                    },
-                    {
-                        "type": "group",
-                        "startIndex": 109,
-                        "value": [
+                        "func": "COUNT",
+                        "tokens": [
                             {
                                 "type": "prop-ref",
-                                "startIndex": 110,
-                                "endIndex": 116,
-                                "value": "{apes}",
-                                "prop": "apes"
+                                "startIndex": 75,
+                                "endIndex": 83,
+                                "value": "{gnomes}",
+                                "prop": "gnomes"
+                            },
+                            {
+                                "type": "func-arg-sep",
+                                "startIndex": 83,
+                                "endIndex": 84
+                            },
+                            {
+                                "type": "prop-ref",
+                                "startIndex": 85,
+                                "endIndex": 93,
+                                "value": "{horses}",
+                                "prop": "horses"
+                            },
+                            {
+                                "type": "func-arg-sep",
+                                "startIndex": 93,
+                                "endIndex": 94
+                            },
+                            {
+                                "type": "prop-ref",
+                                "startIndex": 95,
+                                "endIndex": 103,
+                                "value": "{apples}",
+                                "prop": "apples"
                             },
                             {
                                 "type": "op",
-                                "startIndex": 117,
-                                "endIndex": 118,
+                                "startIndex": 104,
+                                "endIndex": 105,
                                 "op": "ADDITION",
                                 "value": {
                                     "type": "math",
@@ -264,17 +223,50 @@
                             },
                             {
                                 "type": "literal",
-                                "startIndex": 119,
-                                "value": 1,
+                                "startIndex": 106,
+                                "value": 6,
                                 "style": "naked",
-                                "endIndex": 120
+                                "endIndex": 107
+                            },
+                            {
+                                "type": "func-arg-sep",
+                                "startIndex": 107,
+                                "endIndex": 108
+                            },
+                            {
+                                "type": "group",
+                                "startIndex": 109,
+                                "tokens": [
+                                    {
+                                        "type": "prop-ref",
+                                        "startIndex": 110,
+                                        "endIndex": 116,
+                                        "value": "{apes}",
+                                        "prop": "apes"
+                                    },
+                                    {
+                                        "type": "op",
+                                        "startIndex": 117,
+                                        "endIndex": 118,
+                                        "op": "ADDITION",
+                                        "value": {
+                                            "type": "math",
+                                            "symbols": [
+                                                "+"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "literal",
+                                        "startIndex": 119,
+                                        "value": 1,
+                                        "style": "naked",
+                                        "endIndex": 120
+                                    }
+                                ],
+                                "endIndex": 121
                             }
                         ],
-                        "endIndex": 121
-                    },
-                    {
-                        "type": "func-arg-end",
-                        "startIndex": 121,
                         "endIndex": 122
                     }
                 ]

@@ -3,8 +3,8 @@ import is from './is.js';
 let _cache = {};
 
 /**
- * Ops are operations that may be performed within a CalKu expression, such as comparison, math, or logic using a 
- * shorthand syntax.
+ * Ops are operations that may be performed within a CalKu expression between two values (to the left and right of the
+ * operation), such as logical comparisons, value comparisons, and math.
  * @module
  */
 const ops = {
@@ -163,122 +163,6 @@ const ops = {
         symbols: ['-'],
         order: 120,
         func: (a, b) => a - b
-    },
-    //#endregion
-    //#region functions
-    ABS: {
-        type: 'function',
-        symbols: ['ABS'],
-        args: 1,
-        func: (v) => Math.abs(v)
-    },
-    CEIL: {
-        type: 'function',
-        symbols: ['CEIL'],
-        args: 1,
-        func: (v) => Math.ceil(v)
-    },
-    COUNT: {
-        type: 'function',
-        symbols: ['COUNT'],
-        args: true, //true = any number of args
-        func: (...values) => {
-            return values.flat().reduce((pv, cv) => {
-                if (isNaN(cv) === false && typeof cv === 'number') { //match google sheets, only count numbers.
-                    return ++pv;
-                }
-                return pv;
-            }, 0);
-        }
-    },
-    FLOOR: {
-        type: 'function',
-        symbols: ['FLOOR'],
-        args: 1,
-        func: (v) => Math.floor(v)
-    },
-    ISEMPTY: {
-        type: 'function',
-        symbols: ['isempty'],
-        args: 1,
-        func: (v) => typeof v === 'undefined' || v === null || v === ''
-    },
-    ISNOTEMPTY: {
-        type: 'function',
-        symbols: ['isnotempty'],
-        args: 1,
-        func: (v) => typeof v !== 'undefined' && v != null && v !== ''
-    },
-    ISNOTNULL: {
-        type: 'function',
-        symbols: ['isnotnull'],
-        args: 1,
-        func: (v) => v !== null
-    },
-    ISNULL: {
-        type: 'function',
-        symbols: ['isnull'],
-        args: 1,
-        func: (v) => v === null
-    },
-    LEFT: {
-        type: 'function',
-        symbols: ['LEFT'],
-        args: [
-            (v) => typeof v === 'string',
-            (v) => isNaN(v) === false && typeof v === 'number'
-        ],
-        func: (a, b) => a.substring(0, b)
-    },
-    LEN: {
-        type: 'function',
-        symbols: ['LEN'],
-        args: 1,
-        func: (v) => v ? v.toString().length : 0
-    },
-    MID: {
-        type: 'function',
-        symbols: ['MID'],
-        args: [
-            (v) => typeof v === 'string',
-            (v) => isNaN(v) === false && typeof v === 'number',
-            (v) => isNaN(v) === false && typeof v === 'number'
-        ],
-        func: (a, b, c) => a.substring(b, b + c)
-    },
-    RIGHT: {
-        type: 'function',
-        symbols: ['RIGHT'],
-        args: [
-            (v) => typeof v === 'string',
-            (v) => isNaN(v) === false && typeof v === 'number'
-        ],
-        func: (a, b) => a.substring(a.length - b, a.length)
-    },
-    SQRT: {
-        type: 'function',
-        symbols: ['SQRT'],
-        args: 1,
-        func: (v) => Math.sqrt(v)
-    },
-    SUM: {
-        type: 'function',
-        symbols: ['SUM'],
-        args: true, //true = any number of args
-        func: (...values) => {
-            return values.flat().reduce((pv, cv) => {
-                if (isNaN(cv) === false && typeof cv === 'number') { //match google sheets, only sum numbers.
-                    return pv + cv;
-                }
-                return pv;
-            }, 0);
-        }
-    },
-    TRUNCATE: {
-        type: 'function',
-        symbols: ['TRUNCATE'],
-        args: 1,
-        func: (v) => Math.trunc(v)
     },
     //#endregion
 

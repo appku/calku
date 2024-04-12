@@ -43,7 +43,7 @@
         "node": ">=18"
     },
     "devDependencies": {
-        "@appku/jsdoc-template": "^1.1.7",
+        "@appku/jsdoc-template": "^1.1.9",
         "@types/jest": "^27.4.1",
         "eslint": "^8.13.0",
         "eslint-plugin-jest": "^26.1.4",
