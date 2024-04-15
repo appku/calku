@@ -44,7 +44,7 @@ const ops = {
     DOESNOTCONTAIN: {
         type: 'compare',
         symbols: ['doesnotcontain', '!~~'],
-        order: 335,
+        order: 330,
         args: [
             (v) => is(v).instanceOf('array', 'string').required(),
             (v) => is(v).instanceOf('string', 'number', 'boolean').required()
@@ -131,38 +131,77 @@ const ops = {
     ADDITION: {
         type: 'math',
         symbols: ['+'],
-        order: 115,
-        func: (a, b) => a + b
+        order: 120,
+        args: [
+            (v) => is(v).instanceOf('number', 'boolean').required(),
+            (v) => is(v).instanceOf('number', 'boolean').required()
+        ],
+        func: (a, b) => {
+            return a + b;
+        }
     },
     DIVISION: {
         type: 'math',
         symbols: ['/'],
-        order: 105,
+        order: 100,
+        args: [
+            (v) => is(v).instanceOf('number', 'boolean').required(),
+            (v) => is(v).instanceOf('number', 'boolean').required()
+        ],
         func: (a, b) => a / b
     },
     EXPONENTIATION: {
         type: 'math',
         symbols: ['^'],
-        order: 10,
+        order: 50,
+        args: [
+            (v) => is(v).instanceOf('number', 'boolean').required(),
+            (v) => is(v).instanceOf('number', 'boolean').required()
+        ],
         func: (a, b) => a ^ b
     },
     MODULO: {
         type: 'math',
         symbols: ['%'],
-        order: 110,
+        order: 100,
+        args: [
+            (v) => is(v).instanceOf('number', 'boolean').required(),
+            (v) => is(v).instanceOf('number', 'boolean').required()
+        ],
         func: (a, b) => a % b
     },
     MULTIPLICATION: {
         type: 'math',
         symbols: ['*'],
         order: 100,
+        args: [
+            (v) => is(v).instanceOf('number', 'boolean').required(),
+            (v) => is(v).instanceOf('number', 'boolean').required()
+        ],
         func: (a, b) => a * b
     },
     SUBTRACTION: {
         type: 'math',
         symbols: ['-'],
         order: 120,
+        args: [
+            (v) => is(v).instanceOf('number', 'boolean').required(),
+            (v) => is(v).instanceOf('number', 'boolean').required()
+        ],
         func: (a, b) => a - b
+    },
+    //#endregion
+    //#region consolidating operations
+    CONCATENATE: {
+        type: 'consolidating',
+        symbols: ['&'],
+        args: [
+            (v) => is(v).instanceOf('string', 'number', 'boolean', Date).required(),
+            (v) => is(v).instanceOf('string', 'number', 'boolean', Date).required(),
+        ],
+        func: (a, b) => {
+            return (a != null ? a : '').toString() + (b != null ? b : '').toString();
+        }
     },
     //#endregion
 
@@ -175,9 +214,10 @@ const ops = {
     },
 
     /**
-     * Returns an array of all op keys in their declared order (if specified).
+     * Returns an array of all op keys in their declared order (if specified). If keys have orders that are the same,
+     * an Array is returned.
      * @param {...String} [types] - Optional selection of types to include in the returned array.
-     * @returns {Array.<String>}
+     * @returns {Array.<String> | Array.<Array.<String>>}
      */
     ordered(...types) {
         if (_cache && _cache.orderedKeys) {
@@ -187,7 +227,15 @@ const ops = {
         for (let p in this) { //build list of only ops defining objects
             if (p !== '_cache' && typeof this[p] === 'object') {
                 if (types.length === 0 || types.indexOf(this[p].type) >= 0) {
-                    list.push({ key: p, order: this[p].order ?? 99999 });
+                    let existing = list.find(v => v.order === this[p].order ?? 99999);
+                    if (existing) {
+                        if (Array.isArray(existing.key) === false) {
+                            existing.key = [existing.key];
+                        }
+                        existing.key.push(p);
+                    } else {
+                        list.push({ key: p, order: this[p].order ?? 99999 });
+                    }
                 }
             }
         }

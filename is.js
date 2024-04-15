@@ -332,7 +332,7 @@ class IsValidator {
                 }
             }
             if (ok === false) {
-                this._message = `must be an instance of one of the following: ${types.map(t => t.name).join(', ')}.`;
+                this._message = `must be an instance of one of the following: ${types.map(t => typeof t === 'string' ? t : t.name).join(', ')}.`;
             }
         }
         return this;

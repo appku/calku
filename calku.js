@@ -156,7 +156,7 @@ class CalKu {
         let tokens = [];
         if (this.expression) {
             let input = this.expression;
-            let opMap = ops.toRegExp('logic', 'compare', 'math');
+            let opMap = ops.toRegExp('consolidating', 'logic', 'compare', 'math');
             let openToken = null; //if this is present, it's a token that is building up it's context over multiple chars
             let openGroupingStack = []; //stores the "starting" token types discovered and still unclosed.
             //evaluate the expression one char at a time to build a sequential list of tokens
@@ -461,53 +461,107 @@ class CalKu {
             }
             tokens = this._tokenCache;
         }
-        //loop tokens to discover any operators in order and resolve to value.
-        //go into deepest group(s) and process functions first
-        for (let token of tokens) {
-            if (token.type === TokenType.Group) {
-                token.value = this.valueOf(target, token.tokens);
-            } else if (token.type === TokenType.Func && token.tokens?.length) {
-                for (let argToken of token.tokens) {
-                    if (argToken.type === TokenType.Group) {
-                        argToken.value = this.valueOf(target, argToken.tokens);
+        //only process tokens if there are tokens!
+        if (tokens?.length) {
+            //1. Resolve values and recurse into groups and functions to obtain values (deepest to shallowest)
+            for (let token of tokens) {
+                if (token.type === TokenType.Group) {
+                    token.value = this.valueOf(target, token.tokens);
+                } else if (token.type === TokenType.Func && token.tokens?.length) {
+                    for (let argToken of token.tokens) {
+                        if (argToken.type === TokenType.Group) {
+                            argToken.value = this.valueOf(target, argToken.tokens);
+                        }
+                    }
+                } else if (token.type === TokenType.PropertyRef) {
+                    token.value = CalKu.valueAt(target, token.prop);
+                }
+            }
+            //2. Resolve function calls
+            for (let token of tokens) {
+                if (token.type === TokenType.Func) {
+                    let f = funcs[token.func];
+                    let argLen = 0;
+                    if (typeof f.args === 'number') {
+                        argLen = f.args;
+                    } else if (Array.isArray(f.args)) {
+                        argLen = f.args.length;
+                    } else if (f.args === true) {
+                        argLen = true; //any number of arguments
+                    }
+                    if ((argLen === 0 || argLen === true) && !token.tokens?.length) {
+                        token.value = f.func.call(target);
+                    } else {
+                        let args = [];
+                        //split tokens by the separator
+                        for (let ft of token.tokens) {
+                            if (ft.type !== TokenType.Comment) {
+                                args.push(ft.value);
+                            }
+                        }
+                        if (argLen !== true && args.length !== argLen) {
+                            throw new SyntaxError(`Invalid number of function arguments. Function "${token.func}" expects ${argLen}, but ${args.length} ${args.length === 1 ? 'was' : 'were'} provided.`);
+                        }
+                        //make function call to resolve value.
+                        token.value = f.func.call(target, ...args);
                     }
                 }
             }
-        }
-        //resolve function calls.
-        for (let token of tokens) {
-            if (token.type === TokenType.Func) {
-                if (token.args === 0 || !token.tokens?.length) {
-                    token.value = funcs[token.func].func.call(target);
-                } else {
-                    let args = [];
-                    let argTokenGroups = [];
-                    //split tokens by the separator
-
-                    //evaluate each argument set of argument tokens (1..n), split by separator.
-                    //TODO
-                    token.value = funcs[token.func].func.call(target, ...args);
+            //3. Perform operations ("ops") to resolve values
+            if (tokens.length === 1) {
+                //only one token, just return it's value.
+                value = tokens[0].value;
+            } else {
+                //walk through all top-level tokens and perform operations (in order) to net a resulting value.
+                let orderedOps = ops.ordered(); //gotta respect order-of-operations.
+                let consolidator = [];
+                for (let token of tokens) {
+                    if (token.type === TokenType.Operator) {
+                        consolidator.push(token);
+                    } else if (token.type !== TokenType.Comment) {
+                        consolidator.push(token.value);
+                    }
                 }
-            }
-        }
-        //walk through all top-level tokens and perform operations (in order) to net a resulting value.
-        let orderedOps = ops.ordered();
-        for (let opKey of orderedOps) {
-            for (let i = 0; i < tokens.length; i++) {
-                let token = tokens[i];
-                if (i === 0) {
-                    value = token.value;
-                } else if (token.type === TokenType.Operator) {
-                    if (i === tokens.length - 1) {
-                        throw new SyntaxError(`Operator "${token.symbols.join(', ')}" has no subsequent value at index ${token.startIndex}.`);
+                // console.log(`exp: ${this.expression}`);
+                // console.log(`consol start: ${consolidator.join(', ')}`);
+                for (let opKey of orderedOps) {
+                    for (let i = 0; i < consolidator.length; i++) {
+                        if ((Array.isArray(opKey) && opKey.indexOf(consolidator[i].op) > -1) || consolidator[i].op === opKey) {
+                            let opToken = consolidator[i];
+                            let op = ops[opToken.op];
+                            if (i === 0) {
+                                throw new SyntaxError(`Evaluation of operator "${opToken.symbols.join(', ')}" failed to determine a value from the expression preceding it, beginning at index ${opToken.startIndex}. An operator cannot be the first symbol of an expression.`);
+                            } else if (i === consolidator.length - 1) {
+                                throw new SyntaxError(`Operator "${opToken.symbols.join(', ')}" has no subsequent expression following it, at index ${opToken.startIndex}.`);
+                            } else if (typeof consolidator[i + 1] === 'undefined') {
+                                throw new SyntaxError(`Evaluation of operator "${opToken.symbols.join(', ')}" failed to determine a value from the expression following it, beginning at index ${opToken.startIndex}.`);
+                            }
+                            let preceding = consolidator[i - 1];
+                            let following = consolidator[i + 1];
+                            //perform validations (if any)
+                            if (op.args && Array.isArray(op.args)) {
+                                if (op.args.length === 1) {
+                                    op.args[0](preceding).throw(`Operator "${opToken.op}" has invalid arguments.`, true);
+                                }
+                                if (op.args.length === 2) {
+                                    op.args[1](preceding).throw(`Operator "${opToken.op}" has invalid arguments.`, true);
+                                }
+                                if (op.args.length > 2) {
+                                    throw new Error(`Invalid operation "${opToken.op}". The operation contains more than two (2) validation operations which is invalid.`);
+                                }
+                            }
+                            let result = op.func.call(target, preceding, following);
+                            // console.log(`consol [${consolidator[i].op}]: ${consolidator.join(', ')}`);
+                            //consolidate into a single value.
+                            consolidator.splice(i - 1, 3, result);
+                            i = 0; //reset loop to rescan for op.
+                        }
                     }
-                    if (typeof tokens[i + 1].value === 'undefined') {
-                        throw new SyntaxError(`Evaluation of expression failed to determine a value from the statement beginning at index ${token.startIndex}.`);
-                    }
-                    value = ops[token.op].func.call(target, value, tokens[i + 1]?.value);
-                    i++; //move past next token
+                }
+                if (consolidator.length === 1) {
+                    value = consolidator[0];
                 } else {
-                    throw new SyntaxError(`Unexpected token at index ${token.startIndex}.`);
+                    throw new SyntaxError('Unable to consolidate value from expression. The expression may be malformed.');
                 }
             }
         }
@@ -578,7 +632,7 @@ class CalKu {
      * 
      * @example
      * ```
-     * let value = CalKu.valueAt('person.horses:1.age', {
+     * let value = CalKu.valueAt({
      *     person: {
      *         horses: [
      *             { age: 22, name: 'professor' },
@@ -586,17 +640,17 @@ class CalKu {
      *             { age: 4, name: 'whinny' },
      *         ]
      *     }
-     * });
+     * }, 'person.horses:1.age');
      * //value = 18
      * ```
      * @throws Error if the path is not specified or not a string.
      * @throws Error if the path contains an empty segment.
      * @throws Error if any segment in the path contains restricted keywords: "prototype", "constructor", "__proto__".
-     * @param {String} path - The dot-notated and indexed path to the value (property).
      * @param {Object} target - The object to traverse. If the target is not specified, `undefined` is returned.
+     * @param {String} path - The dot-notated and indexed path to the value (property).
      * @returns {*}
      */
-    static valueAt(path, target) {
+    static valueAt(target, path) {
         if (!path || typeof path !== 'string') {
             throw new Error('Invalid path to property. A text string path is required.');
         }

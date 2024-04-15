@@ -10,13 +10,7 @@
         "type": "op",
         "startIndex": 2,
         "endIndex": 3,
-        "op": "ADDITION",
-        "value": {
-            "type": "math",
-            "symbols": [
-                "+"
-            ]
-        }
+        "op": "ADDITION"
     },
     {
         "type": "group",
@@ -33,13 +27,7 @@
                 "type": "op",
                 "startIndex": 8,
                 "endIndex": 9,
-                "op": "ADDITION",
-                "value": {
-                    "type": "math",
-                    "symbols": [
-                        "+"
-                    ]
-                }
+                "op": "ADDITION"
             },
             {
                 "type": "literal",
@@ -52,13 +40,7 @@
                 "type": "op",
                 "startIndex": 12,
                 "endIndex": 13,
-                "op": "DIVISION",
-                "value": {
-                    "type": "math",
-                    "symbols": [
-                        "/"
-                    ]
-                }
+                "op": "DIVISION"
             },
             {
                 "type": "prop-ref",
@@ -71,13 +53,7 @@
                 "type": "op",
                 "startIndex": 29,
                 "endIndex": 30,
-                "op": "ADDITION",
-                "value": {
-                    "type": "math",
-                    "symbols": [
-                        "+"
-                    ]
-                }
+                "op": "ADDITION"
             },
             {
                 "type": "group",
@@ -94,13 +70,7 @@
                         "type": "op",
                         "startIndex": 38,
                         "endIndex": 39,
-                        "op": "MULTIPLICATION",
-                        "value": {
-                            "type": "math",
-                            "symbols": [
-                                "*"
-                            ]
-                        }
+                        "op": "MULTIPLICATION"
                     },
                     {
                         "type": "group",
@@ -121,13 +91,7 @@
                                         "type": "op",
                                         "startIndex": 44,
                                         "endIndex": 45,
-                                        "op": "ADDITION",
-                                        "value": {
-                                            "type": "math",
-                                            "symbols": [
-                                                "+"
-                                            ]
-                                        }
+                                        "op": "ADDITION"
                                     },
                                     {
                                         "type": "prop-ref",
@@ -143,13 +107,7 @@
                                 "type": "op",
                                 "startIndex": 55,
                                 "endIndex": 56,
-                                "op": "DIVISION",
-                                "value": {
-                                    "type": "math",
-                                    "symbols": [
-                                        "/"
-                                    ]
-                                }
+                                "op": "DIVISION"
                             },
                             {
                                 "type": "prop-ref",
@@ -165,13 +123,7 @@
                         "type": "op",
                         "startIndex": 67,
                         "endIndex": 68,
-                        "op": "SUBTRACTION",
-                        "value": {
-                            "type": "math",
-                            "symbols": [
-                                "-"
-                            ]
-                        }
+                        "op": "SUBTRACTION"
                     },
                     {
                         "type": "func",
@@ -213,13 +165,7 @@
                                 "type": "op",
                                 "startIndex": 104,
                                 "endIndex": 105,
-                                "op": "ADDITION",
-                                "value": {
-                                    "type": "math",
-                                    "symbols": [
-                                        "+"
-                                    ]
-                                }
+                                "op": "ADDITION"
                             },
                             {
                                 "type": "literal",
@@ -248,13 +194,7 @@
                                         "type": "op",
                                         "startIndex": 117,
                                         "endIndex": 118,
-                                        "op": "ADDITION",
-                                        "value": {
-                                            "type": "math",
-                                            "symbols": [
-                                                "+"
-                                            ]
-                                        }
+                                        "op": "ADDITION"
                                     },
                                     {
                                         "type": "literal",

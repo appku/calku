@@ -281,42 +281,42 @@ describe('.valueAt', () => {
     it('throws on an invalid path type.', () => {
         let tests = [undefined, null, true, false, new Date(), 1234];
         for (let t of tests) {
-            expect(() => CalcKu.valueAt(t, {})).toThrowError(/A text string path is required./i);
+            expect(() => CalcKu.valueAt({}, t)).toThrowError(/A text string path is required./i);
         }
     });
     it('throws on an empty path segment.', () => {
-        expect(() => CalcKu.valueAt('abc..test', { abc: { test: [1, 2, 3] } })).toThrowError(/The path contains an empty segment at position/i);
-        expect(() => CalcKu.valueAt('abc.test:', { abc: { test: [1, 2, 3] } })).toThrowError(/The path contains an empty segment at position/i);
+        expect(() => CalcKu.valueAt({ abc: { test: [1, 2, 3] } }, 'abc..test')).toThrowError(/The path contains an empty segment at position/i);
+        expect(() => CalcKu.valueAt({ abc: { test: [1, 2, 3] } }, 'abc.test:')).toThrowError(/The path contains an empty segment at position/i);
     });
     it('throws on illegal segment.', () => {
-        expect(() => CalcKu.valueAt('prototype', {})).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('constructor', {})).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('__proto__', {})).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('x.prototype', { x: {} })).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('x.constructor', { x: {} })).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('x.__proto__', { x: {} })).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('x:0.prototype', { x: [{}] })).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('x:0.constructor', { x: [{}] })).toThrowError(/invalid segment/i);
-        expect(() => CalcKu.valueAt('x:0.__proto__', { x: [{}] })).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({}, 'prototype')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({}, 'constructor')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({}, '__proto__')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({ x: {} }, 'x.prototype')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({ x: {} }, 'x.constructor')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({ x: {} }, 'x.__proto__')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({ x: [{}] }, 'x:0.prototype')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({ x: [{}] }, 'x:0.constructor')).toThrowError(/invalid segment/i);
+        expect(() => CalcKu.valueAt({ x: [{}] }, 'x:0.__proto__')).toThrowError(/invalid segment/i);
     });
     it('returns undefined if any part of the path results in a undefined property.', () => {
-        expect(CalcKu.valueAt('abc', null)).toBeUndefined();
-        expect(CalcKu.valueAt('abc', undefined)).toBeUndefined();
-        expect(CalcKu.valueAt('abc', {})).toBeUndefined();
-        expect(CalcKu.valueAt('hello.toast', { hello: { mars: 123 } })).toBeUndefined();
-        expect(CalcKu.valueAt('hello.toast:2', { hello: { mars: 123 } })).toBeUndefined();
+        expect(CalcKu.valueAt(null, 'abc')).toBeUndefined();
+        expect(CalcKu.valueAt(undefined, 'abc')).toBeUndefined();
+        expect(CalcKu.valueAt({}, 'abc')).toBeUndefined();
+        expect(CalcKu.valueAt({ hello: { mars: 123 } }, 'hello.toast')).toBeUndefined();
+        expect(CalcKu.valueAt({ hello: { mars: 123 } }, 'hello.toast:2')).toBeUndefined();
     });
     it('returns undefined if a mid-segment results in a null property value.', () => {
-        expect(CalcKu.valueAt('hello.mars.land', { hello: { mars: null } })).toBeUndefined();
-        expect(CalcKu.valueAt('hello.mars:3', { hello: { mars: null } })).toBeUndefined();
-        expect(CalcKu.valueAt('hello.mars', { hello: { mars: null } })).toBeNull();
+        expect(CalcKu.valueAt({ hello: { mars: null } }, 'hello.mars.land')).toBeUndefined();
+        expect(CalcKu.valueAt({ hello: { mars: null } }, 'hello.mars:3')).toBeUndefined();
+        expect(CalcKu.valueAt({ hello: { mars: null } }, 'hello.mars')).toBeNull();
     });
     it('returns undefined if any part of the path results in a value that is a function.', () => {
-        expect(CalcKu.valueAt('abc', { abc: () => 1 + 1 })).toBeUndefined();
-        expect(CalcKu.valueAt('abc:1', { abc: ['hi', () => 1 + 1] })).toBeUndefined();
-        expect(CalcKu.valueAt('abc.test', { abc: { test: () => 1 + 1 } })).toBeUndefined();
-        expect(CalcKu.valueAt('abc.test:1', { abc: { test: () => 1 + 1 } })).toBeUndefined();
-        expect(CalcKu.valueAt('abc.test.name', { abc: { test: () => 1 + 1 } })).toBeUndefined();
+        expect(CalcKu.valueAt({ abc: () => 1 + 1 }, 'abc')).toBeUndefined();
+        expect(CalcKu.valueAt({ abc: ['hi', () => 1 + 1] }, 'abc:1')).toBeUndefined();
+        expect(CalcKu.valueAt({ abc: { test: () => 1 + 1 } }, 'abc.test')).toBeUndefined();
+        expect(CalcKu.valueAt({ abc: { test: () => 1 + 1 } }, 'abc.test:1')).toBeUndefined();
+        expect(CalcKu.valueAt({ abc: { test: () => 1 + 1 } }, 'abc.test.name')).toBeUndefined();
     });
     it('finds a value by dot path and index.', () => {
         let tests = [
@@ -344,12 +344,12 @@ describe('.valueAt', () => {
             }
         };
         for (let t of tests) {
-            expect(CalcKu.valueAt(t[0], sample)).toEqual(t[1]);
+            expect(CalcKu.valueAt(sample, t[0])).toEqual(t[1]);
         }
     });
 });
 
-describe.only('#value', () => {
+describe('#value', () => {
     const sample = {
         alpha: 'abc',
         hello: 'yo',
@@ -370,11 +370,42 @@ describe.only('#value', () => {
     };
     let tests = [
         ['10 + 5 - 1', 14],
-        // ['(10 + (5 - 1)) / 7', 2],
-        ['10 + 5 - 12 / 3 * 2', 7], //order of operations
+        //grouping
+        ['(10 + (5 * 2))', 20],
+        //numeric/boolean mix
+        ['true + 3', 4],
+        ['false + 3', 3],
+        //order of operations
+        ['10 + 5 - 12 / 3 * 2', 7], 
+        ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25],
+        ['10 + 5 - 12 / 3 * 2 + true', 8], 
+        ['false + (15 - 2 * 4) + (1 + 1 / 4) - true', 7.25],
+        //functions
         ['HELLOWORLD()', 'Hello world.'],
-        // ['SUM(1, 2, 3)', 6],
-        // ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25], //test order of operations, should be `(15 - 8) + (1 + .25)` or `7 + 1.25`
+        ['SUM(1, 2, 3)', 6],
+        ['6 / SUM(1, 2, 3) + 3', 4],
+        ['6 / HELLOWORLD() + 3', NaN],
+        //property references
+        ['{num} + 3', 334458],
+        ['{detail.more} + -4 / {detail.less}', 8],
+        ['{detail.others:0}', 1],
+        //comments
+        [`(15 - 2 * 4) 
+        //test comment
+        //and again
+        + (1 + 1 / 4)`, 8.25],
+        //consolidating
+        ['"hi" & " there x" & 3 & true', 'hi there x3true'],
+        //logical
+        ['1 and true', true],
+        ['0 and true', false],
+        ['1 and false', false],
+        ['0 and false', false],
+        ['1 or true', true],
+        ['0 or true', true],
+        ['1 or false', true],
+        ['0 or false', false],
+        ['false AND true OR (true AND false)', false]
     ];
     for (let t of tests) {
         it(`expression "${t[0]}" should evaluate to ${typeof t[1] === 'string' ? `"${t[1]}"` : t[1]} on sample.`, () => {

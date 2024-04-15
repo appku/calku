@@ -9,15 +9,15 @@ const structuredClone = () => { //polyfill for jest stupidity.
 describe('#ordered', () => {
     it('operators are the first in the proper order-of-operations.', () => {
         expect(ops.ordered().slice(0, 18)).toEqual([
-            'EXPONENTIATION', 'MULTIPLICATION',
-            'DIVISION', 'MODULO',
-            'ADDITION', 'SUBTRACTION',
+            'EXPONENTIATION',
+            ['DIVISION', 'MODULO', 'MULTIPLICATION'],
+            ['ADDITION', 'SUBTRACTION'],
             'AND', 'OR',
             'LESSTHAN', 'LESSTHANOREQUAL',
             'GREATERTHAN', 'GREATERTHANOREQUAL',
             'EQUALS', 'NOTEQUALS',
-            'CONTAINS', 'ENDSWITH',
-            'STARTSWITH', 'DOESNOTCONTAIN'
+            ['CONTAINS', 'DOESNOTCONTAIN', 'ENDSWITH', 'STARTSWITH'],
+            'CONCATENATE'
         ]);
         let funcs = ops.ordered().slice(18);
         for (let f of funcs) {
@@ -86,7 +86,7 @@ it('has no duplicate symbols.', () => {
 });
 
 describe('ops have valid types, symbols, and funcs.', () => {
-    let validTypes = ['compare', 'function', 'math', 'logic'];
+    let validTypes = ['compare', 'consolidating', 'math', 'logic'];
     for (let p in ops) { //build list of only ops defining objects
         if (p !== '_cache' && typeof ops[p] === 'object') {
             it(`${p}`, () => {
@@ -208,7 +208,7 @@ describe('compare ops work as expected and always return a boolean.', () => {
 
 describe('math ops work as expected and always return a number.', () => {
     //Alphabetical order please...
-    it('ADDITION', () => { 
+    it('ADDITION', () => {
         let tests = [
             [null, null, 0],
             [0, null, 0],
