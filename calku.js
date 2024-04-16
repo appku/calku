@@ -156,7 +156,7 @@ class CalKu {
         let tokens = [];
         if (this.expression) {
             let input = this.expression;
-            let opMap = ops.toRegExp('consolidating', 'logic', 'compare', 'math');
+            let opMap = ops.toRegExp('consolidate', 'logic', 'compare', 'math');
             let openToken = null; //if this is present, it's a token that is building up it's context over multiple chars
             let openGroupingStack = []; //stores the "starting" token types discovered and still unclosed.
             //evaluate the expression one char at a time to build a sequential list of tokens

@@ -347,7 +347,10 @@ describe('#instanceOf', () => {
     it('throws on invalid type string.', () => {
         expect(() => is(123).instanceOf('moose').valid()).toThrowError();
     });
-    describe('ensures that typeof options are checked.', () => {
+    it('throws on invalid type undefined.', () => {
+        expect(() => is(123).instanceOf(undefined).valid()).toThrowError();
+    });
+    describe('ensures that type options are checked.', () => {
         let data = [
             [123, 'number'],
             [-1.5, 'number'],
@@ -371,6 +374,12 @@ describe('#instanceOf', () => {
                 }
             });
         }
+    });
+
+    it('Supports allowing null values in the list.', () => {
+        expect(is(null).instanceOf(null).valid()).toBe(true);
+        expect(is(0).instanceOf(null).valid()).toBe(false);
+        expect(is(false).instanceOf(null).valid()).toBe(false);
     });
 });
 

@@ -394,7 +394,7 @@ describe('#value', () => {
         //test comment
         //and again
         + (1 + 1 / 4)`, 8.25],
-        //consolidating
+        //consolidate
         ['"hi" & " there x" & 3 & true', 'hi there x3true'],
         //logical
         ['1 and true', true],

@@ -303,6 +303,7 @@ class IsValidator {
      * 
      * @throws Error if a type is an unsupported string value: a string type specification must be either "string", 
      * "number", "boolean", "object" or "array".
+     * @throws Error if any type is `undefined` (literal).
      * @param  {...any} types - Any number of types to be checked. You can also specify simplified type checking 
      * by specifying a value of `'array'`, `'boolean'`, `'number'`, `'string'`, or `'object'` instead of a type.
      * @returns {IsValidator}
@@ -314,6 +315,8 @@ class IsValidator {
                 let typeIsString = (typeof t ==='string');
                 if (typeIsString && t !== 'string' && t !== 'boolean' && t !== 'number' && t !== 'object' && t !== 'array') {
                     throw new Error(`Invalid type value. "${t}" is not a valid type string. Use a constructor object or specify "string", "boolean", "number", "object", or "array".`)
+                } else if (t === undefined) {
+                    throw new Error('The type "undefined" is not supported.');
                 }
                 if ((t === 'boolean' || t === 'number' || t === 'string') && this._value.type === t) {
                     ok = true;
@@ -326,13 +329,16 @@ class IsValidator {
                 } else if (t === 'array' && Array.isArray(this._value.value)) {
                     ok = true;
                     break;
-                } else if (!typeIsString && this._value.value instanceof t) {
+                } else if (t === null && this._value.value === null) {
+                    ok = true;
+                    break;
+                } else if (t != null && !typeIsString && this._value.value instanceof t) {
                     ok = true;
                     break;
                 }
             }
             if (ok === false) {
-                this._message = `must be an instance of one of the following: ${types.map(t => typeof t === 'string' ? t : t.name).join(', ')}.`;
+                this._message = `must be an instance of one of the following: ${types.map(t => typeof t === 'string' ? t : t?.name ?? 'null').join(', ')}.`;
             }
         }
         return this;
