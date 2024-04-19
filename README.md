@@ -66,10 +66,17 @@ your own).
 The CalKu engine is semi-forgiving- `null` values are often treated as `0`'s or blank strings in order for the 
 expression to evaluate to a user-facing value.
 
-### List of Operators
-Operators are symbols that are expressed between two values and result in a new value. For example, in the expression `4 < 5`, the `<` character is the operator, instructing the expression to get a `true` or `false` value by comparing and checking that `4` is less than `5`. Subsequent operations can follow any resulting value creating a chain of evaluation, i.e. an expression!
+All built-in operations and functions that support array arguments use a maximum recursion depth of `3`. This means
+that functions, such as `COUNT` will traverse into array items that are also arrays, and so on, to a total of `3` deep.
 
-In this table you will find a listing of all *built-in* and supported operators in CalKu. It is possible to add your own custom operators as well, see: [Adding Custom Operators](#adding-custom-operators).
+### List of Operators
+Operators are symbols that are expressed between two values and result in a new value. For example, in the expression 
+`4 < 5`, the `<` character is the operator, instructing the expression to get a `true` or `false` value by comparing 
+and checking that `4` is less than `5`. Subsequent operations can follow any resulting value creating a chain of 
+evaluation, i.e. an expression!
+
+In this table you will find a listing of all *built-in* and supported operators in CalKu. It is possible to add your 
+own custom operators as well, see: [Adding Custom Operators](#adding-custom-operators).
 
 <table width="100%">
     <thead>

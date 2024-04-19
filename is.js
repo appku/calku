@@ -212,6 +212,14 @@ class IsValidator {
     }
 
     /**
+     * Placeholder which performs no checks.
+     * @returns {IsValidator}
+     */
+    anything() {
+        return this;
+    }
+
+    /**
      * Checks if the value is an array.
      * @returns {IsValidator}
      */
@@ -274,7 +282,7 @@ class IsValidator {
         if (!this._message && (
             Array.isArray(this._value.value)
             || this._value.type !== 'object'
-            || !this._value.value.constructor
+            || !this._value.value?.constructor
         )) {
             this._message = 'must be an object.';
         }
@@ -306,28 +314,41 @@ class IsValidator {
      * @throws Error if any type is `undefined` (literal).
      * @param  {...any} types - Any number of types to be checked. You can also specify simplified type checking 
      * by specifying a value of `'array'`, `'boolean'`, `'number'`, `'string'`, or `'object'` instead of a type.
+     * 
+     * If `'array'` or `Array` is specified among other types, the array items will be checked as well (recursively).
      * @returns {IsValidator}
      */
     instanceOf(...types) {
         if (!this._message) {
             let ok = false;
             for (let t of types) {
-                let typeIsString = (typeof t ==='string');
+                let typeIsString = (typeof t === 'string');
                 if (typeIsString && t !== 'string' && t !== 'boolean' && t !== 'number' && t !== 'object' && t !== 'array') {
                     throw new Error(`Invalid type value. "${t}" is not a valid type string. Use a constructor object or specify "string", "boolean", "number", "object", or "array".`)
                 } else if (t === undefined) {
                     throw new Error('The type "undefined" is not supported.');
                 }
-                if ((t === 'boolean' || t === 'number' || t === 'string') && this._value.type === t) {
+                if (
+                    ((t === 'boolean' || t === Boolean) && this._value.type === 'boolean')
+                    || ((t === 'number' || t === Number) && this._value.type === 'number')
+                    || ((t === 'string' || t === String) && this._value.type === 'string')
+                ) {
                     ok = true;
                     break;
-                } else if (t === 'object'
+                } else if ((t === 'object' || t === Object)
                     && this._value.type === 'object'
                     && this._value.value.constructor) {
                     ok = true;
                     break;
-                } else if (t === 'array' && Array.isArray(this._value.value)) {
+                } else if ((t === 'array' || t === Array) && Array.isArray(this._value.value)) {
                     ok = true;
+                    //recursive value check only if other types specified
+                    if (types.length > 1) {
+                        for (let i of this._value.value) {
+                            ok &= IsValidator.is(i).instanceOf(...types).valid();
+                        }
+                        ok = !!ok;
+                    } 
                     break;
                 } else if (t === null && this._value.value === null) {
                     ok = true;

@@ -1,23 +1,6 @@
 import jest from 'jest-mock';
 import ops from './ops.js';
-
-const structuredClone = () => { //polyfill for jest stupidity.
-    let clone = Object.assign({}, ops);
-    return clone;
-};
-
-const prettyPrint = (v) => {
-    if (v === Infinity) {
-        return 'Infinity';
-    } else if (Number.isNaN(v)) {
-        return 'NaN';
-    } else if (v instanceof Error) {
-        return 'Error';
-    } else if (v instanceof Date) {
-        return `Date(${v.toISOString()})`;
-    }
-    return JSON.stringify(v);
-};
+import utilities from './test/utilities.js';
 
 describe('#ordered', () => {
     it('operators are the first in the proper order-of-operations.', () => {
@@ -40,7 +23,7 @@ describe('#ordered', () => {
         }
     });
     it('calls are cached until recycled', () => {
-        let clone = structuredClone(ops);
+        let clone = utilities.structuredClone(ops);
         let original = clone.ordered();
         clone.NEWTHING = { type: 'function', symbols: ['NEWTHING'], args: true, func: () => { } };
         expect(clone.ordered()).toEqual(original);
@@ -74,7 +57,7 @@ describe('#toRegExp', () => {
         }
     });
     it('calls are cached until recycled', () => {
-        let clone = structuredClone(ops);
+        let clone = utilities.structuredClone(ops);
         let original = clone.toRegExp();
         clone.NEWTHING = { type: 'function', symbols: ['NEWTHING'], args: true, func: () => { } };
         expect(clone.toRegExp().size).toBe(original.size);
@@ -446,37 +429,28 @@ describe('ops validate arguments and funcs execute with expected results.', () =
                 it('has unit tests', () => expect(t).toBeTruthy());
                 if (t && t.samples) {
                     for (let s of t.samples) {
-                        it(`${prettyPrint(s[0])} ${p} ${prettyPrint(s[1])} = ${prettyPrint(s[2])}`, () => {
-                            if (s[2] === Error) {
-                                expect(() => {
-                                    if (Array.isArray(ops[p].args)) {
-                                        if (ops[p].args.length > 0) {
-                                            ops[p].args[0](s[0]).throw();
-                                        }
-                                        if (ops[p].args.length > 1) {
-                                            ops[p].args[1](s[1]).throw();
-                                        }
-                                    }
-                                    ops[p].func(s[0], s[1]);
-                                }).toThrow(s[2]);
-                            } else {
+                        let opArgs = s.slice(0, s.length - 1);
+                        let expected = s[s.length - 1];
+                        it(`${p}(${opArgs.map(v => utilities.prettyPrint(v)).join(', ')}) = ${utilities.prettyPrint(expected)}`, () => {
+                            let go = () => {
                                 if (Array.isArray(ops[p].args)) {
-                                    if (ops[p].args.length > 0) {
-                                        ops[p].args[0](s[0]).throw();
+                                    if (ops[p].args.length != opArgs.length) {
+                                        throw new Error(`Invalid argument length. Expected ${ops[p].args.length} but found ${opArgs.length}.`);
                                     }
-                                    if (ops[p].args.length > 1) {
-                                        ops[p].args[1](s[1]).throw();
-                                    }
-                                }
-                                if (Number.isNaN(s[2])) {
-                                    expect(Number.isNaN(ops[p].func(s[0], s[1]))).toBe(true);
-                                } else {
-                                    if (ops[p].type === 'math') {
-                                        expect(ops[p].func(s[0], s[1])).toBeCloseTo(s[2]);
-                                    } else {
-                                        expect(ops[p].func(s[0], s[1])).toBe(s[2]);
+                                    for (let i = 0; i < ops[p].args.length; i++) {
+                                        ops[p].args[i](opArgs[i]).throw(); //run validation on each arg
                                     }
                                 }
+                                return ops[p].func.apply(ops[p], opArgs);
+                            };
+                            if (expected === Error) {
+                                expect(go).toThrow(expected);
+                            } else if (Number.isNaN(expected)) {
+                                expect(go()).toBe(NaN);
+                            } else if (typeof expected === 'number') {
+                                expect(go()).toBeCloseTo(expected);
+                            } else {
+                                expect(go()).toBe(expected);
                             }
                         });
                     }

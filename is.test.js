@@ -219,6 +219,16 @@ describe('#required', () => {
     });
 });
 
+describe('#anything', () => {
+    it('does nothing', () => {
+        expect(is(123).anything().valid()).toBe(true);
+        expect(is(true).anything().valid()).toBe(true);
+        expect(is(new Date()).anything().valid()).toBe(true);
+        expect(is('lalala').anything().valid()).toBe(true);
+        expect(is({ horse: 'cat' }).anything().valid()).toBe(true);
+    });
+});
+
 describe('#array', () => {
     it('generates an appropriate validation message.', () => {
         expect(is('zoggin').array().message()).toBe('The value must be an collection of items (array).');
@@ -310,7 +320,7 @@ describe('#object', () => {
         expect(is(456, 'zoo').object().message()).toBe('The value for "zoo" must be an object.');
     });
     it('checks if the value is an object with a constructor.', () => {
-        const expectedInvalid = [12.45, 0, -5.2, true, false, [], [123, 4, 5, 'hello']];
+        const expectedInvalid = [12.45, 0, -5.2, true, false, null, undefined, [], [123, 4, 5, 'hello']];
         for (let v of expectedInvalid) {
             expect(is(v).object().valid()).toBe(false);
         }
@@ -375,11 +385,16 @@ describe('#instanceOf', () => {
             });
         }
     });
-
     it('Supports allowing null values in the list.', () => {
         expect(is(null).instanceOf(null).valid()).toBe(true);
         expect(is(0).instanceOf(null).valid()).toBe(false);
         expect(is(false).instanceOf(null).valid()).toBe(false);
+    });
+    it('performs a recursive check if "array" is specified among other types.', () => {
+        expect(is([1, 2, true, false]).instanceOf(Array, Number, Boolean).valid()).toBe(true);
+        expect(is([1, 2, true, false, [1, 4.4, true, []]]).instanceOf(Array, Number, Boolean).valid()).toBe(true);
+        expect(is([1, 2, true, 'house']).instanceOf(Array, Number, Boolean).valid()).toBe(false);
+        expect(is([1, 2, true, false, [1, 4.4, 'dead', []]]).instanceOf(Array, Number, Boolean).valid()).toBe(false);
     });
 });
 
@@ -442,7 +457,7 @@ describe('supports chaining validations.', () => {
             .object()
             .phoneNumber()
             .postalCode()
-            .range(1,100)
+            .range(1, 100)
             .regexp(/.*/i)
             .required()
             .string()

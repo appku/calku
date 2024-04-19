@@ -1,6 +1,25 @@
 import is from './is.js';
 
+const RECURSION_DEPTH = 3;
 let _cache = {};
+
+/**
+ * @typedef FunctionParameter
+ * @property {Boolean} [spread]
+ * @property {String} [name="value"]
+ * @property {String} [hint] 
+ * @property {IsValidator} validator
+ */
+
+/**
+ * @typedef CalKuFunction
+ * @property {Array.<String>} symbols
+ * @property {String} [hint] 
+ * @property {Boolean | FunctionParameter | Array.<FunctionParameter>} [params]
+ * @property {Function} func
+ */
+
+//FIXME need to add hints to funcs and params.
 
 /**
  * Funcs are special calls with optional arguments within a CalKu expression to evaluate to a resulting value.
@@ -9,109 +28,297 @@ let _cache = {};
 const funcs = {
     //Alphabetical order of functions. 
     //!!! If modifying this list, please try to maintain this order for readability, this will be a long list!
+    /** @type {CalKuFunction} */
     ABS: {
         symbols: ['ABS'],
-        args: 1,
+        params: [
+            (v) => is(v).instanceOf('number', 'boolean', null),
+        ],
         func: (v) => Math.abs(v)
     },
+    /** @type {CalKuFunction} */
+    AVERAGE: {
+        symbols: ['AVERAGE'],
+        params: {
+            spread: true,
+            name: 'numbers',
+            validator: (v) => is(v).instanceOf(Array, 'number', 'boolean', null),
+        },
+        func: (...values) => {
+            values = values.flat(RECURSION_DEPTH);
+            if (values.length > 0) {
+                let sum = values.reduce((pv, cv) => pv + (cv || 0), 0);
+                return sum / values.length;
+            }
+            return 0;
+        }
+    },
+    /** @type {CalKuFunction} */
     CEIL: {
         symbols: ['CEIL'],
-        args: 1,
+        params: [
+            (v) => is(v).instanceOf('number', 'boolean', null),
+        ],
         func: (v) => Math.ceil(v)
     },
+    /** @type {CalKuFunction} */
     COUNT: {
         symbols: ['COUNT'],
-        args: true, //true = any number of args
+        params: {
+            spread: true,
+            name: 'numbers',
+            validator: (v) => is(v).instanceOf(Array, 'number', 'boolean', null),
+        },
         func: (...values) => {
-            return values.flat().reduce((pv, cv) => {
-                if (isNaN(cv) === false && typeof cv === 'number') { //match google sheets, only count numbers.
+            return values.flat(RECURSION_DEPTH).reduce((pv, cv) => {
+                if (cv != null && isNaN(cv) === false) { //match google sheets, only count numbers.
                     return ++pv;
                 }
                 return pv;
             }, 0);
         }
     },
+    /** @type {CalKuFunction} */
     FLOOR: {
         symbols: ['FLOOR'],
-        args: 1,
+        params: [
+            (v) => is(v).instanceOf('number', 'boolean', null),
+        ],
         func: (v) => Math.floor(v)
     },
+    /** @type {CalKuFunction} */
     HELLOWORLD: {
         symbols: ['HELLOWORLD'],
-        args: 0,
         func: () => 'Hello world.'
     },
+    /** @type {CalKuFunction} */
+    ISARRAY: {
+        symbols: ['ISARRAY'],
+        params: 1,
+        func: (v) => is(v).array().valid()
+    },
+    /** @type {CalKuFunction} */
+    ISBOOLEAN: {
+        symbols: ['ISBOOLEAN'],
+        params: 1,
+        func: (v) => is(v).boolean().valid()
+    },
+    /** @type {CalKuFunction} */
+    ISDATE: {
+        symbols: ['ISDATE'],
+        params: 1,
+        func: (v) => is(v).instanceOf(Date).valid()
+    },
+    /** @type {CalKuFunction} */
     ISEMPTY: {
-        symbols: ['isempty'],
-        args: 1,
-        func: (v) => typeof v === 'undefined' || v === null || v === ''
+        symbols: ['ISEMPTY'],
+        params: [
+            (v) => is(v).instanceOf('string', null),
+        ],
+        func: (v) => typeof v === 'undefined' || v === null || v.trim() === ''
     },
+    /** @type {CalKuFunction} */
     ISNOTEMPTY: {
-        symbols: ['isnotempty'],
-        args: 1,
-        func: (v) => typeof v !== 'undefined' && v != null && v !== ''
+        symbols: ['ISNOTEMPTY'],
+        params: [
+            (v) => is(v).instanceOf('string', null),
+        ],
+        func: (v) => typeof v !== 'undefined' && v != null && v.trim() !== ''
     },
+    /** @type {CalKuFunction} */
     ISNOTNULL: {
-        symbols: ['isnotnull'],
-        args: 1,
+        symbols: ['ISNOTNULL'],
+        params: 1,
         func: (v) => v !== null
     },
+    /** @type {CalKuFunction} */
     ISNULL: {
-        symbols: ['isnull'],
-        args: 1,
+        symbols: ['ISNULL'],
+        params: 1,
         func: (v) => v === null
     },
+    /** @type {CalKuFunction} */
+    ISOBJECT: {
+        symbols: ['ISOBJECT'],
+        params: 1,
+        func: (v) => {
+            if (is(v).instanceOf(Date).valid()) {
+                return false; //CalKu treats dates and objects differently.
+            }
+            return is(v).object().valid();
+        }
+    },
+    /** @type {CalKuFunction} */
     LEFT: {
         symbols: ['LEFT'],
-        args: [
-            (v) => typeof v === 'string',
-            (v) => isNaN(v) === false && typeof v === 'number'
+        params: [
+            (v) => is(v).instanceOf('string', 'number', null),
+            (v) => is(v).integer().required()
         ],
-        func: (a, b) => a.substring(0, b)
+        func: (a, b) => a != null ? a.toString().substring(0, b) : ''
     },
+    /** @type {CalKuFunction} */
     LEN: {
         symbols: ['LEN'],
-        args: 1,
-        func: (v) => v ? v.toString().length : 0
+        params: 1,
+        func: (v) => {
+            if (v === null) {
+                return 0;
+            } else if (is(v).array().valid()) {
+                return v.length;
+            } else if (is(v).instanceOf('number', 'string').valid()) {
+                return v.toString().length;
+            } else if (is(v).boolean().valid()) {
+                return 1;
+            } else if (is(v).instanceOf(Date).valid()) {
+                return v.getTime();
+            } else if (is(v).object().valid()) {
+                return 1;
+            }
+            return 0;
+        }
     },
+    /** @type {CalKuFunction} */
     MID: {
         symbols: ['MID'],
-        args: [
-            (v) => typeof v === 'string',
-            (v) => isNaN(v) === false && typeof v === 'number',
-            (v) => isNaN(v) === false && typeof v === 'number'
+        params: [
+            (v) => is(v).instanceOf('string', 'number', null),
+            (v) => is(v).integer().required(),
+            (v) => is(v).integer().required()
         ],
-        func: (a, b, c) => a.substring(b, b + c)
+        func: (a, b, c) => a != null ? a.toString().substring(b, b + c) : ''
     },
+    /** @type {CalKuFunction} */
     RIGHT: {
         symbols: ['RIGHT'],
-        args: [
-            (v) => typeof v === 'string',
-            (v) => isNaN(v) === false && typeof v === 'number'
+        params: [
+            (v) => is(v).instanceOf('string', 'number', null),
+            (v) => is(v).integer().required()
         ],
-        func: (a, b) => a.substring(a.length - b, a.length)
+        func: (a, b) => {
+            if (a != null) {
+                let v = a.toString();
+                let startIndex = v.length - b;
+                return v.substring(startIndex, a.length);
+            }
+            return '';
+        }
     },
+    /** @type {CalKuFunction} */
     SQRT: {
         symbols: ['SQRT'],
-        args: 1,
+        params: [
+            (v) => is(v).instanceOf('number', 'boolean', null),
+        ],
         func: (v) => Math.sqrt(v)
     },
+    /** @type {CalKuFunction} */
     SUM: {
         symbols: ['SUM'],
-        args: true, //true = any number of args
+        params: {
+            spread: true,
+            name: 'numbers',
+            validator: (v) => is(v).instanceOf(Array, 'number', 'boolean', null),
+        },
         func: (...values) => {
-            return values.flat().reduce((pv, cv) => {
-                if (isNaN(cv) === false && typeof cv === 'number') { //match google sheets, only sum numbers.
+            return values.flat(RECURSION_DEPTH).reduce((pv, cv) => {
+                if (isNaN(cv) === false && is(cv).instanceOf('number', 'boolean')) { //match google sheets, only sum numbers.
                     return pv + cv;
                 }
                 return pv;
             }, 0);
         }
     },
+    /** @type {CalKuFunction} */
+    TEXTJOIN: {
+        symbols: ['TEXTJOIN'],
+        params: [
+            (v) => is(v).string().required(),
+            (v) => is(v).boolean().required(),
+            {
+                spread: true,
+                name: 'values',
+                validator: (v) => is(v).instanceOf(Array, 'string', 'number', 'boolean', Date, null),
+            }
+        ],
+        func: (delim, ignoreEmpty, ...values) => {
+            values = values.flat(RECURSION_DEPTH).filter(v => is(v).instanceOf('string', 'number', 'boolean', Date, null).valid());
+            if (ignoreEmpty) {
+                return values.filter(v => v != null && typeof v != 'undefined' && v.toString().length > 0).join(delim);
+            }
+            return values.join(delim);
+        }
+    },
+    /** @type {CalKuFunction} */
     TRUNCATE: {
         symbols: ['TRUNCATE'],
-        args: 1,
+        params: [
+            (v) => is(v).instanceOf('number', 'boolean', null),
+        ],
         func: (v) => Math.trunc(v)
+    },
+
+    /**
+     * Validates a given array of argument values for a specified func(tion). Optionally throws an error instead of 
+     * returning a boolean result.
+     * @param {String | CalKuFunction} func - The key or instance of a CalKu function.
+     * @param {Array} args - Array of arguments to be validated.
+     * @param {Boolean} [throwError] - Optionally, if `true` throw an error if validation fails.
+     * @returns {Boolean}
+     */
+    argsValid(func, args, throwError) {
+        if (typeof func === 'string') {
+            func = this[func];
+        }
+        if (!func || !func.symbols) {
+            throw new Error('Argument "func" must be a valid function key or CalKu function object.');
+        }
+        if (func.symbols) {
+            if (
+                (typeof func.params === 'number' && func.params != args.length)
+                || ((typeof func.params === 'undefined' || func.params === false) && args.length > 0)
+            ) {
+                if (throwError) {
+                    throw new Error(`Invalid number of arguments. Expected ${func?.params?.length ?? 0} but found ${args.length}.`);
+                }
+                return false;
+            } else if (func.params && (Array.isArray(func.params) || func.params.validator)) {
+                let arr = func.params;
+                if (func.params && typeof func.params.validator === 'function') {
+                    //looks like params is an object literal, convert it to an array
+                    arr = [func.params];
+                }
+                if (arr.reduce((pv, cv, ci) => pv + (arr[ci].spread === true ? 1 : 0), 0) > 1) {
+                    throw new Error('Invalid function parameter definition, found multiple spread arguments, and only one is allowed.');
+                }
+                if (arr.some(v => v.spread === true) === false && arr.length != args.length) {
+                    if (throwError) {
+                        throw new Error(`Invalid number of arguments. Expected ${arr.length} but found ${args.length}.`);
+                    }
+                    return false;
+                }
+                for (let i = 0; i < arr.length; i++) {
+                    //run validation on each arg
+                    let f = null;
+                    let paramType = typeof arr[i];
+                    if (paramType === 'function') {
+                        f = arr[i];
+                    } else if (paramType === 'object' && typeof arr[i].validator === 'function') {
+                        f = arr[i].validator;
+                    } else {
+                        throw new Error(`Invalid function parameter object at index ${i}.`);
+                    }
+                    if (throwError) {
+                        f(args[i]).throw();
+                    } else if (f(args[i]).valid() === false) {
+                        return false;
+                    }
+
+                }
+            }
+            return true;
+        }
+        return false;
     },
 
     /**
@@ -135,15 +342,13 @@ const funcs = {
         }
         let r = new Map();
         for (let o in this) {
-            if (this[o] && this[o].symbols && this[o].type) {
-                if (types.length === 0 || types.indexOf(this[o].type) >= 0) {
-                    r.set(o, new RegExp(
-                        '^(' + this[o].symbols
-                            .map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-                            .join('|') +
-                        ')(?:\\s|\\(|\\)|$)', 'i')
-                    );
-                }
+            if (this[o] && this[o].symbols) {
+                r.set(o, new RegExp(
+                    '^(' + this[o].symbols
+                        .map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+                        .join('|') +
+                    ')(?:\\s|\\(|\\)|$)', 'i')
+                );
             }
         }
         _cache.regexp = r;

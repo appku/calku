@@ -481,15 +481,15 @@ class CalKu {
             for (let token of tokens) {
                 if (token.type === TokenType.Func) {
                     let f = funcs[token.func];
-                    let argLen = 0;
-                    if (typeof f.args === 'number') {
-                        argLen = f.args;
-                    } else if (Array.isArray(f.args)) {
-                        argLen = f.args.length;
-                    } else if (f.args === true) {
-                        argLen = true; //any number of arguments
+                    let paramLen = 0;
+                    if (typeof f.params === 'number') {
+                        paramLen = f.params;
+                    } else if (Array.isArray(f.params)) {
+                        paramLen = f.params.length;
+                    } else if (f.params === true) {
+                        paramLen = true; //any number of arguments
                     }
-                    if ((argLen === 0 || argLen === true) && !token.tokens?.length) {
+                    if ((paramLen === 0 || paramLen === true) && !token.tokens?.length) {
                         token.value = f.func.call(target);
                     } else {
                         let args = [];
@@ -499,11 +499,9 @@ class CalKu {
                                 args.push(ft.value);
                             }
                         }
-                        if (argLen !== true && args.length !== argLen) {
-                            throw new SyntaxError(`Invalid number of function arguments. Function "${token.func}" expects ${argLen}, but ${args.length} ${args.length === 1 ? 'was' : 'were'} provided.`);
-                        }
+                        funcs.argsValid(f, args, true);
                         //make function call to resolve value.
-                        token.value = f.func.call(target, ...args);
+                        token.value = f.func.apply(target, args);
                     }
                 }
             }
