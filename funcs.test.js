@@ -32,7 +32,6 @@ describe('#toRegExp', () => {
 });
 
 describe('#argsValid', () => {
-
     it('throws when the func argument is invalid object.', () => {
         expect(() => funcs.argsValid(null, [], false)).toThrow();
         expect(() => funcs.argsValid('hello', [], false)).toThrow();
@@ -44,6 +43,64 @@ describe('#argsValid', () => {
     });
     it('throws when the func definition has multiple spread parameters.', () => {
         expect(() => funcs.argsValid('TACO', [], false)).toThrow();
+    });
+    it('throws when a func parameter list contains multiple spreads.', () => {
+        let testFuncs = utilities.structuredClone(funcs);
+        testFuncs.BOGUS = {
+            symbols: ['BOGUS'],
+            params: [
+                {
+                    spread: true,
+                    validator: (v) => is(v).anything()
+                },
+                {
+                    spread: true,
+                    validator: (v) => is(v).anything()
+                }
+            ],
+            func: (v) => v
+        };
+        expect(() => testFuncs.argsValid('BOGUS', [], false)).toThrow();
+    });
+    it('throws when a func parameter is an invalid type.', () => {
+        let testFuncs = utilities.structuredClone(funcs);
+        testFuncs.BOGUS = {
+            symbols: ['BOGUS'],
+            params: [
+                {
+                    spread: true,
+                    validator: (v) => is(v).anything()
+                },
+                new Date()
+            ],
+            func: (v) => v
+        };
+        expect(() => testFuncs.argsValid('BOGUS', [], false)).toThrow();
+    });
+    it('throws when a func parameter validator is an invalid type.', () => {
+        let testFuncs = utilities.structuredClone(funcs);
+        testFuncs.BOGUS = {
+            symbols: ['BOGUS'],
+            params: [
+                {
+                    spread: true,
+                    validator: 'taco'
+                }
+            ],
+            func: (v) => v
+        };
+        expect(() => testFuncs.argsValid('BOGUS', ['hi'], true)).toThrow();
+    });
+    it('throws or returns based on throwError argument for failed validation checks.', () => {
+        expect(() => funcs.argsValid('SUM', [1, new Date()], false)).not.toThrow();
+        expect(funcs.argsValid('SUM', [1, new Date()], false)).toBe(false);
+    });
+    it('throws or returns if the minimum number of parameter arguments are not present.', () => {
+        expect(funcs.argsValid('SUM', [], false)).toBe(false);
+        expect(funcs.argsValid('TEXTJOIN', [','], false)).toBe(false);
+        expect(funcs.argsValid('TEXTJOIN', [',', true], false)).toBe(false);
+        expect(() => funcs.argsValid('TEXTJOIN', [','], true)).toThrow();
+        expect(() => funcs.argsValid('TEXTJOIN', [',', true], true)).toThrow();
     });
     it('checks the number of arguments are valid.', () => {
         let samples = [
@@ -198,6 +255,28 @@ describe('funcs validate arguments and funcs execute with expected results.', ()
                 ['Hello world.'],
                 [true, Error],
                 [false, Error],
+                [null, Error],
+                ['', Error],
+                [123, Error],
+                [-14214, Error],
+                [1.2554, Error],
+                [-1.2554, Error],
+                [1, 2, 3, Error],
+                [1, 2.5, -1.5, Error],
+                [3, [4, 5], 6, Error],
+                [3, [4, 5, [true, 2.4]], 6, Error],
+                ['hello', Error],
+                [new Date(), Error],
+                [{ lit: 'eral' }, Error]
+            ]
+        },
+        {
+            func: funcs.IF,
+            samples: [
+                [true, 1, 2, 1],
+                [false, 1, 2, 2],
+                [true, 'abc', 123, 'abc'],
+                [false, 'abc', 123, 123],
                 [null, Error],
                 ['', Error],
                 [123, Error],
@@ -515,6 +594,7 @@ describe('funcs validate arguments and funcs execute with expected results.', ()
                 ['.', true, [1, ['hi', null, true], 3], '1.hi.true.3'],
                 ['yo-', false, [null, [null, [null]], null], 'yo-yo-yo-'],
                 ['yo-', true, [null, [null, [null]], null], ''],
+                ['.', false, Error],
                 [true, Error],
                 [false, Error],
                 [null, Error],

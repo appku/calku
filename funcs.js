@@ -1,6 +1,7 @@
 import is from './is.js';
 
 const RECURSION_DEPTH = 3;
+const STANDARD_SUPPORTED_TYPES = [Array, 'string', 'number', 'boolean', Date, null];
 let _cache = {};
 
 /**
@@ -90,6 +91,30 @@ const funcs = {
     HELLOWORLD: {
         symbols: ['HELLOWORLD'],
         func: () => 'Hello world.'
+    },
+    /** @type {CalKuFunction} */
+    IF: {
+        symbols: ['IF'],
+        params: [
+            {
+                name: 'condition',
+                validator: (v) => is(v).boolean().required()
+            },
+            {
+                name: 'valueIfTrue',
+                validator: (v) => is(v).anything()
+            },
+            {
+                name: 'valueIfFalse',
+                validator: (v) => is(v).anything()
+            }
+        ],
+        func: (condition, valueIfTrue, valueIfFalse) => {
+            if (condition === true) {
+                return valueIfTrue;
+            }
+            return valueIfFalse;
+        }
     },
     /** @type {CalKuFunction} */
     ISARRAY: {
@@ -264,6 +289,7 @@ const funcs = {
      * @param {String | CalKuFunction} func - The key or instance of a CalKu function.
      * @param {Array} args - Array of arguments to be validated.
      * @param {Boolean} [throwError] - Optionally, if `true` throw an error if validation fails.
+     * Errors caused by an invalid func definition do not use this argument and will still be thrown.
      * @returns {Boolean}
      */
     argsValid(func, args, throwError) {
@@ -273,52 +299,66 @@ const funcs = {
         if (!func || !func.symbols) {
             throw new Error('Argument "func" must be a valid function key or CalKu function object.');
         }
-        if (func.symbols) {
-            if (
-                (typeof func.params === 'number' && func.params != args.length)
-                || ((typeof func.params === 'undefined' || func.params === false) && args.length > 0)
-            ) {
-                if (throwError) {
-                    throw new Error(`Invalid number of arguments. Expected ${func?.params?.length ?? 0} but found ${args.length}.`);
-                }
-                return false;
-            } else if (func.params && (Array.isArray(func.params) || func.params.validator)) {
-                let arr = func.params;
-                if (func.params && typeof func.params.validator === 'function') {
-                    //looks like params is an object literal, convert it to an array
-                    arr = [func.params];
-                }
+        //validate
+        if (
+            (typeof func.params === 'number' && func.params != args.length)
+            || ((typeof func.params === 'undefined' || func.params === false) && args.length > 0)
+        ) {
+            if (throwError) {
+                throw new Error(`Invalid number of arguments. Expected ${func?.params?.length ?? 0} but found ${args.length}.`);
+            }
+            return false;
+        } else if (func.params && (Array.isArray(func.params) || func.params.validator)) {
+            let arr = func.params;
+            if (func.params && typeof func.params.validator === 'function') {
+                //looks like params is an object literal, convert it to an array
+                arr = [func.params];
+            }
+            let hasSpreadParam = arr.some(v => v.spread === true) ;
+            if (hasSpreadParam) {
+                //check spread param usage is valid.
                 if (arr.reduce((pv, cv, ci) => pv + (arr[ci].spread === true ? 1 : 0), 0) > 1) {
-                    throw new Error('Invalid function parameter definition, found multiple spread arguments, and only one is allowed.');
-                }
-                if (arr.some(v => v.spread === true) === false && arr.length != args.length) {
+                    throw new Error('Invalid function parameter definition: Found multiple spread arguments, and only one is allowed.');
+                } else if (!arr[arr.length - 1].spread) {
+                    throw new Error('Invalid function parameter definition: A spread is only allowed on the last parameter.');
+                } else if (args.length <= arr.length - 1) {
                     if (throwError) {
-                        throw new Error(`Invalid number of arguments. Expected ${arr.length} but found ${args.length}.`);
+                        throw new Error(`Invalid number of arguments. Expected at least ${arr.length} but found ${args.length}.`);
                     }
                     return false;
                 }
-                for (let i = 0; i < arr.length; i++) {
-                    //run validation on each arg
-                    let f = null;
-                    let paramType = typeof arr[i];
-                    if (paramType === 'function') {
-                        f = arr[i];
-                    } else if (paramType === 'object' && typeof arr[i].validator === 'function') {
-                        f = arr[i].validator;
-                    } else {
-                        throw new Error(`Invalid function parameter object at index ${i}.`);
-                    }
-                    if (throwError) {
-                        f(args[i]).throw();
-                    } else if (f(args[i]).valid() === false) {
-                        return false;
-                    }
-
+            } else if (arr.length != args.length) { //no spread, so param & arg length must match.
+                if (throwError) {
+                    throw new Error(`Invalid number of arguments. Expected ${arr.length} but found ${args.length}.`);
+                }
+                return false;
+            }
+            //walk all arguments and validate
+            for (let i = 0; i < args.length; i++) {
+                let param = null;
+                let paramType = null;
+                let validatorFunc = null;
+                if (i >= arr.length) {
+                    param = arr[arr.length - 1]; //use the last parameter as we appear to be going into a spread
+                } else {
+                    param = arr[i]; //param and arg index should align (unless on a final spread)
+                }
+                paramType = typeof param;
+                if (paramType === 'function') {
+                    validatorFunc = param;
+                } else if (paramType === 'object' && typeof param.validator === 'function') {
+                    validatorFunc = param.validator;
+                } else {
+                    throw new Error(`Invalid function parameter definition: A parameter validator used for the argument at index ${i} appears to be invalid.`);
+                }
+                if (throwError) {
+                    validatorFunc(args[i]).throw();
+                } else if (validatorFunc(args[i]).valid() === false) {
+                    return false;
                 }
             }
-            return true;
         }
-        return false;
+        return true;
     },
 
     /**
