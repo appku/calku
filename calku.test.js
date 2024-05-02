@@ -384,7 +384,6 @@ describe('#value', () => {
         ['HELLOWORLD()', 'Hello world.'],
         ['SUM(1, 2, 3)', 6],
         ['6 / SUM(1, 2, 3) + 3', 4],
-        ['6 / HELLOWORLD() + 3', NaN],
         //property references
         ['{num} + 3', 334458],
         ['{detail.more} + -4 / {detail.less}', 8],

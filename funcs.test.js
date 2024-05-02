@@ -89,7 +89,7 @@ describe('#argsValid', () => {
             ],
             func: (v) => v
         };
-        expect(() => testFuncs.argsValid('BOGUS', ['hi'], true)).toThrow();
+        expect(() => testFuncs.argsValid('BOGUS', ['hi'], true)).toThrow(/A parameter validator used/);
     });
     it('throws or returns based on throwError argument for failed validation checks.', () => {
         expect(() => funcs.argsValid('SUM', [1, new Date()], false)).not.toThrow();

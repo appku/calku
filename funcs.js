@@ -16,7 +16,7 @@ let _cache = {};
  * @typedef CalKuFunction
  * @property {Array.<String>} symbols
  * @property {String} [hint] 
- * @property {Boolean | FunctionParameter | Array.<FunctionParameter>} [params]
+ * @property {FunctionParameter | Array.<FunctionParameter>} [params]
  * @property {Function} func
  */
 
@@ -352,7 +352,7 @@ const funcs = {
                     throw new Error(`Invalid function parameter definition: A parameter validator used for the argument at index ${i} appears to be invalid.`);
                 }
                 if (throwError) {
-                    validatorFunc(args[i]).throw();
+                    validatorFunc(args[i]).throw(`Function with symbol(s) "${func.symbols.join(', ')}" failed validating argument at index ${i}.`, true);
                 } else if (validatorFunc(args[i]).valid() === false) {
                     return false;
                 }

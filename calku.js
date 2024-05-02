@@ -495,9 +495,10 @@ class CalKu {
                         let args = [];
                         //split tokens by the separator
                         for (let ft of token.tokens) {
-                            if (ft.type !== TokenType.Comment) {
+                            if (ft.type !== TokenType.Comment && ft.type !== TokenType.FuncArgumentsSeparator) {
                                 args.push(ft.value);
                             }
+                            
                         }
                         funcs.argsValid(f, args, true);
                         //make function call to resolve value.
@@ -537,17 +538,7 @@ class CalKu {
                             let preceding = consolidator[i - 1];
                             let following = consolidator[i + 1];
                             //perform validations (if any)
-                            if (op.args && Array.isArray(op.args)) {
-                                if (op.args.length === 1) {
-                                    op.args[0](preceding).throw(`Operator "${opToken.op}" has invalid arguments.`, true);
-                                }
-                                if (op.args.length === 2) {
-                                    op.args[1](preceding).throw(`Operator "${opToken.op}" has invalid arguments.`, true);
-                                }
-                                if (op.args.length > 2) {
-                                    throw new Error(`Invalid operation "${opToken.op}". The operation contains more than two (2) validation operations which is invalid.`);
-                                }
-                            }
+                            ops.argsValid(op, [preceding, following], true);
                             let result = op.func.call(target, preceding, following);
                             // console.log(`consol [${consolidator[i].op}]: ${consolidator.join(', ')}`);
                             //consolidate into a single value.

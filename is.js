@@ -397,12 +397,14 @@ class IsValidator {
      * @param {String} [text] - Optional text to use for a failure message.
      * @param {Boolean} [append=false] - Optional flag to append the custom `text` message to the auto-generated one
      * instead of overriding it.
+     * @returns {Boolean} Always returns `true`, as a validation failure results in a thrown error.
      */
     throw(text, append) {
         let result = this.message(text, append);
         if (result) {
             throw new Error(result);
         }
+        return true;
     }
 
     /**

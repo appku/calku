@@ -1,8 +1,8 @@
 # AppKu&trade; CalKu
-AppKu&trade; CalKu is a powerful expression engine built for power-users that developers can leverage to enhance their
-applications. CalKu turns syntactic text into a chain of operations and functions that can run against objects and 
-compute a resulting value. The functionality is similar to "formulas" seen in spreadsheet applications, but tailored
-to operate on complex objects with depth and arrays.
+AppKu&trade; CalKu is a powerful text expression engine built for power-users which developers can leverage to enhance
+their applications. CalKu turns syntactic text into a chain of operations and functions that can run against objects
+and compute a resulting value. The functionality is similar to "formulas" seen in spreadsheet applications, but
+tailored to operate on complex objects with depth and arrays.
 
 It's simple to learn, and easy to use. 
 
@@ -15,7 +15,7 @@ import calku from '@appku/calku';
  * In CalKu, the `value` function evaluates the expression against an object (optional), 
  * and returns the resulting value.
  * In this first example, we'll pass the expression '{message} & "world"' to CalKu along
- * with the object `{ message: 'hello' }` in order to concatenate the message and the word
+ * with the object `{ message: 'hello' }` in order to concatenate the message value and the string
  * "hello" into "hello world".
  */
 let output = calku.value('{message} & "world"', { message: 'hello' });
@@ -29,7 +29,7 @@ console.log(output); // 7
 output = calku.value('false AND true OR (true AND false)');
 console.log(output); // false
 
-//and even functions with a more complex object...
+//and even functions...
 output = calku.value(
     'SUM(1, 2, 3) + {invoice.qty} + {products:1.price}', 
     { 
@@ -83,10 +83,56 @@ own custom operators as well, see: [Adding Custom Operators](#adding-custom-oper
         <tr>
             <th>Name</th>
             <th align="right">Symbols</th>
-            <th>Arguments</th>
+            <th>Description</th>
         </tr>
     </thead>
     <tbody>
+        <tr>
+            <td colspan="4"><h4>Logic</h4></td>
+        </tr>
+        <tr>
+            <td>AND</td>
+            <td align="center"><code>AND</code>, <code>&&</code></td>
+            <td>
+                Performs a bitwise `AND` operation, resulting in a <code>true</code> or <code>false</code> value.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <em>Example:</em>
+                <code>"true AND false"</code><br />
+                <small>Result: <code>false</code></small>
+            </td>
+        </tr>
+        <tr>
+            <td>OR</td>
+            <td align="center"><code>OR</code>, <code>||</code></td>
+            <td>
+                Performs a bitwise `OR` operation, resulting in a <code>true</code> or <code>false</code> value.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <em>Example:</em>
+                <code>"true OR false"</code><br />
+                <small>Result: <code>true</code></small>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4"><h4>Maths</h4></td>
+        </tr>
+        <tr>
+            <td>ADD</td>
+            <td align="center"><code>+</code></td>
+            <td>Adds two numbers together.</td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <em>Example:</em>
+                <code>"1 + 2 + 3"</code><br />
+                <small>Result: <code>6</code></small>
+            </td>
+        </tr>
         <tr>
             <td>CONCATENATE</td>
             <td align="center"><code>&amp;</code></td>
@@ -110,6 +156,36 @@ own custom operators as well, see: [Adding Custom Operators](#adding-custom-oper
 </table>
 
 ### List of Functions
+<table width="100%">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th align="right">Symbols</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>TBD</td>
+            <td align="center"><code>TBD</code></td>
+            <td>
+                <dl>
+                    <dt>#1 Left of symbol</dt>
+                    <dd>All Types Supported</dd>
+                    <dt>#2 Right of symbol</dt>
+                    <dd>All Types Supported</dd>
+                </dl>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <em>Example:</em>
+                <code>"TBD"</code><br />
+                <small>Result: <code>TBD</code></small>
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 ### Advanced
 

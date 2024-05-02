@@ -30,13 +30,15 @@ const ops = {
         type: 'compare',
         symbols: ['contains', '~~'],
         order: 330,
-        args: [
-            (v) => is(v).instanceOf('array', 'string', null),
-            (v) => is(v).instanceOf('string', 'number', 'boolean', Date, null),
+        params: [
+            (v) => is(v).instanceOf('array', 'string', 'number', 'boolean', null),
+            (v) => is(v).instanceOf('string', 'number', 'boolean', null),
         ],
         func: (a, b) => {
             if (a === null && b === null) {
                 return true;
+            } else if (a === null) {
+                return false;
             }
             if (!a?.indexOf) {
                 a = a?.toString() ?? '';
@@ -48,13 +50,15 @@ const ops = {
         type: 'compare',
         symbols: ['doesnotcontain', '!~~'],
         order: 330,
-        args: [
-            (v) => is(v).instanceOf('array', 'string', null),
-            (v) => is(v).instanceOf('string', 'number', 'boolean', Date, null),
+        params: [
+            (v) => is(v).instanceOf('array', 'string', 'number', 'boolean', null),
+            (v) => is(v).instanceOf('string', 'number', 'boolean', null),
         ],
         func: (a, b) => {
             if (a === null && b === null) {
                 return false;
+            } else if (a === null) {
+                return true;
             }
             if (!a?.indexOf) {
                 a = a?.toString() ?? '';
@@ -66,13 +70,15 @@ const ops = {
         type: 'compare',
         symbols: ['endswith'],
         order: 330,
-        args: [
-            (v) => is(v).instanceOf('array', 'string', null),
-            (v) => is(v).instanceOf('string', 'number', 'boolean', Date, null),
+        params: [
+            (v) => is(v).instanceOf('array', 'string', 'number', 'boolean', null),
+            (v) => is(v).instanceOf('string', 'number', 'boolean', null),
         ],
         func: (a, b) => {
             if (a === null && b === null) {
                 return true;
+            } else if (a === null) {
+                return false;
             }
             if (Array.isArray(a)) {
                 return (!!a.length && a[a.length - 1] === b);
@@ -142,13 +148,15 @@ const ops = {
         type: 'compare',
         symbols: ['startswith'],
         order: 330,
-        args: [
-            (v) => is(v).instanceOf('array', 'string', null),
-            (v) => is(v).instanceOf('string', 'number', 'boolean', Date, null),
+        params: [
+            (v) => is(v).instanceOf('array', 'string', 'number', 'boolean', null),
+            (v) => is(v).instanceOf('string', 'number', 'boolean', null),
         ],
         func: (a, b) => {
             if (a === null && b === null) {
                 return true;
+            } else if (a === null) {
+                return false;
             }
             if (Array.isArray(a)) {
                 return (!!a.length && a[0] === b);
@@ -164,7 +172,7 @@ const ops = {
         type: 'math',
         symbols: ['+'],
         order: 120,
-        args: [
+        params: [
             (v) => is(v).instanceOf('number', 'boolean', null),
             (v) => is(v).instanceOf('number', 'boolean', null)
         ],
@@ -176,7 +184,7 @@ const ops = {
         type: 'math',
         symbols: ['/'],
         order: 100,
-        args: [
+        params: [
             (v) => is(v).instanceOf('number', 'boolean', null),
             (v) => is(v).instanceOf('number', 'boolean', null)
         ],
@@ -186,7 +194,7 @@ const ops = {
         type: 'math',
         symbols: ['^'],
         order: 50,
-        args: [
+        params: [
             (v) => is(v).instanceOf('number', 'boolean', null),
             (v) => is(v).instanceOf('number', 'boolean', null)
         ],
@@ -196,7 +204,7 @@ const ops = {
         type: 'math',
         symbols: ['%'],
         order: 100,
-        args: [
+        params: [
             (v) => is(v).instanceOf('number', 'boolean', null),
             (v) => is(v).instanceOf('number', 'boolean', null)
         ],
@@ -206,7 +214,7 @@ const ops = {
         type: 'math',
         symbols: ['*'],
         order: 100,
-        args: [
+        params: [
             (v) => is(v).instanceOf('number', 'boolean', null),
             (v) => is(v).instanceOf('number', 'boolean', null)
         ],
@@ -216,7 +224,7 @@ const ops = {
         type: 'math',
         symbols: ['-'],
         order: 120,
-        args: [
+        params: [
             (v) => is(v).instanceOf('number', 'boolean', null),
             (v) => is(v).instanceOf('number', 'boolean', null)
         ],
@@ -227,7 +235,7 @@ const ops = {
     CONCATENATE: {
         type: 'consolidate',
         symbols: ['&'],
-        args: [
+        params: [
             (v) => is(v).instanceOf('string', 'number', 'boolean', Date, null),
             (v) => is(v).instanceOf('string', 'number', 'boolean', Date, null),
         ],
@@ -236,6 +244,68 @@ const ops = {
         }
     },
     //#endregion
+
+    /**
+     * Validates a given array of argument values for a specified func(tion). Optionally throws an error instead of 
+     * returning a boolean result.
+     * @param {String | CalKuFunction} op - The key or instance of a CalKu function.
+     * @param {Array} args - Array of arguments to be validated.
+     * @param {Boolean} [throwError] - Optionally, if `true` throw an error if validation fails.
+     * Errors caused by an invalid func definition do not use this argument and will still be thrown.
+     * @returns {Boolean}
+     */
+    argsValid(op, args, throwError) {
+        if (typeof op === 'string') {
+            op = this[op];
+        }
+        if (!op || !op.symbols) {
+            throw new Error('Argument "op" must be a valid operation key or CalKu operator object.');
+        }
+        //validate
+        if (
+            (typeof op.params === 'number' && op.params != args.length)
+            || ((typeof op.params === 'undefined' || op.params === false) && args.length != 2)
+        ) {
+            if (throwError) {
+                throw new Error(`Invalid number of arguments. Expected ${op?.params?.length ?? 2} but found ${args.length}.`);
+            }
+            return false;
+        } else if (op.params && (Array.isArray(op.params) || op.params.validator)) {
+            let arr = op.params;
+            if (op.params && typeof op.params.validator === 'function') {
+                //looks like params is an object literal, convert it to an array
+                arr = [op.params];
+            }
+            if (arr.some(v => v.spread === true)) {
+                throw new Error('Invalid op parameter definition: A spread parameter is not allowed on operations.');
+            } else if (arr.length != args.length) {
+                if (throwError) {
+                    throw new Error(`Invalid number of arguments. Expected ${arr.length} but found ${args.length}.`);
+                }
+                return false;
+            }
+            //walk all arguments and validate
+            for (let i = 0; i < arr.length; i++) {
+                let param = arr[i];
+                let paramType = typeof param;
+                let validatorFunc = null;
+                if (paramType === 'function') {
+                    validatorFunc = param;
+                } else if (paramType === 'object' && typeof param.validator === 'function') {
+                    validatorFunc = param.validator;
+                } else {
+                    throw new Error(`Invalid op parameter definition: A parameter validator used for the argument at index ${i} appears to be invalid.`);
+                }
+                if (throwError) {
+                    let label = (i === 0 ? 'the left-side argument' : 'the right-side argument');
+                    validatorFunc(args[i]).throw(`Operation with symbol(s) "${op.symbols.join(', ')}" failed validating ${label}.`, true);
+                } else if (validatorFunc(args[i]).valid() === false) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    },
 
     /**
      * Removes cached information about ops.    
