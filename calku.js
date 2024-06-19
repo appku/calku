@@ -495,10 +495,13 @@ class CalKu {
                         let args = [];
                         //split tokens by the separator
                         for (let ft of token.tokens) {
-                            if (ft.type !== TokenType.Comment && ft.type !== TokenType.FuncArgumentsSeparator) {
+                            if (ft.type === TokenType.Func) {
+                                console.log(JSON.stringify(ft.tokens, null , 4));
+                                ft.value = this.valueOf(target, ft.tokens);
                                 args.push(ft.value);
-                            }
-                            
+                            } else if (ft.type !== TokenType.Comment && ft.type !== TokenType.FuncArgumentsSeparator) {
+                                args.push(ft.value);
+                            }             
                         }
                         funcs.argsValid(f, args, true);
                         //make function call to resolve value.
@@ -525,7 +528,7 @@ class CalKu {
                 // console.log(`consol start: ${consolidator.join(', ')}`);
                 for (let opKey of orderedOps) {
                     for (let i = 0; i < consolidator.length; i++) {
-                        if ((Array.isArray(opKey) && opKey.indexOf(consolidator[i].op) > -1) || consolidator[i].op === opKey) {
+                        if (consolidator[i] && ((Array.isArray(opKey) && opKey.indexOf(consolidator[i].op) > -1) || consolidator[i].op === opKey)) {
                             let opToken = consolidator[i];
                             let op = ops[opToken.op];
                             if (i === 0) {

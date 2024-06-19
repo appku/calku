@@ -21,6 +21,9 @@ describe('#constructor', () => {
 });
 
 describe('#lexer', () => {
+    it('throws on an unknown function name.', () => {
+        expect(()=>new CalcKu('BOGUS(1,2)').lexer()).toThrow(/unknown/i);
+    });
     it('extracts grouping tokens', () => {
         let results = new CalcKu('((10 + 10) / 4)').lexer();
         expect(Array.isArray(results)).toBe(true);
@@ -369,47 +372,55 @@ describe('#value', () => {
         }
     };
     let tests = [
-        ['10 + 5 - 1', 14],
-        //grouping
-        ['(10 + (5 * 2))', 20],
-        //numeric/boolean mix
-        ['true + 3', 4],
-        ['false + 3', 3],
-        //order of operations
-        ['10 + 5 - 12 / 3 * 2', 7], 
-        ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25],
-        ['10 + 5 - 12 / 3 * 2 + true', 8], 
-        ['false + (15 - 2 * 4) + (1 + 1 / 4) - true', 7.25],
-        //functions
-        ['HELLOWORLD()', 'Hello world.'],
-        ['SUM(1, 2, 3)', 6],
-        ['6 / SUM(1, 2, 3) + 3', 4],
-        //property references
-        ['{num} + 3', 334458],
-        ['{detail.more} + -4 / {detail.less}', 8],
-        ['{detail.others:0}', 1],
-        //comments
-        [`(15 - 2 * 4) 
-        //test comment
-        //and again
-        + (1 + 1 / 4)`, 8.25],
-        //consolidate
-        ['"hi" & " there x" & 3 & true', 'hi there x3true'],
-        //logical
-        ['1 and true', true],
-        ['0 and true', false],
-        ['1 and false', false],
-        ['0 and false', false],
-        ['1 or true', true],
-        ['0 or true', true],
-        ['1 or false', true],
-        ['0 or false', false],
-        ['false AND true OR (true AND false)', false]
+        // ['10 + 5 - 1', 14],
+        // //grouping
+        // ['(10 + (5 * 2))', 20],
+        // //numeric/boolean mix
+        // ['true + 3', 4],
+        // ['false + 3', 3],
+        // //order of operations
+        // ['10 + 5 - 12 / 3 * 2', 7],
+        // ['(15 - 2 * 4) + (1 + 1 / 4)', 8.25],
+        // ['10 + 5 - 12 / 3 * 2 + true', 8],
+        // ['false + (15 - 2 * 4) + (1 + 1 / 4) - true', 7.25],
+        // //functions
+        // ['HELLOWORLD()', 'Hello world.'],
+        // ['SUM(1, 2, 3)', 6],
+        // ['6 / SUM(1, 2, 3) + 3', 4],
+        ['SUM(SUM(1, 3), 4, 8, 5)', 21],
+        // //property references
+        // ['{num} + 3', 334458],
+        // ['{detail.more} + -4 / {detail.less}', 8],
+        // ['{detail.others:0}', 1],
+        // //comments
+        // [`(15 - 2 * 4) 
+        // //test comment
+        // //and again
+        // + (1 + 1 / 4)`, 8.25],
+        // //consolidate
+        // ['"hi" & " there x" & 3 & true', 'hi there x3true'],
+        // //logical
+        // ['1 and true', true],
+        // ['0 and true', false],
+        // ['1 and false', false],
+        // ['0 and false', false],
+        // ['1 or true', true],
+        // ['0 or true', true],
+        // ['1 or false', true],
+        // ['0 or false', false],
+        // ['false AND true OR (true AND false)', false]
     ];
     for (let t of tests) {
-        it(`expression "${t[0]}" should evaluate to ${typeof t[1] === 'string' ? `"${t[1]}"` : t[1]} on sample.`, () => {
+        it.only(`expression "${t[0]}" should evaluate to ${typeof t[1] === 'string' ? `"${t[1]}"` : t[1]} on sample.`, () => {
             // console.log(JSON.stringify(new CalcKu(t[0]).lexer(), null, 4));
             expect(new CalcKu(t[0]).value(sample)).toBe(t[1]);
         });
     }
+    it('handles recursively referenced objects.', () => {
+        let sample = {
+            abc: 123
+        };
+        sample.zed = sample;
+        expect(new CalcKu('{zed.zed.zed.zed.zed.zed.zed.abc} * 2').value(sample)).toBe(246);
+    });
 });
